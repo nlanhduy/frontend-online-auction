@@ -1,17 +1,22 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
+
+import { Link } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 interface CategoryTagProps {
   name: string
-  onClick?: () => void
+  id?: string
+  onClick?: (e?: any) => void
   variant?: 'default' | 'outline' | 'ghost'
   size?: 'sm' | 'md'
   className?: string
 }
 
 export function CategoryTag({
+  id = '1',
   name,
   onClick,
   variant = 'default',
@@ -30,16 +35,18 @@ export function CategoryTag({
   }
 
   return (
-    <Button
-      onClick={onClick}
-      className={cn(
-        'rounded-full font-medium cursor-pointer',
-        sizeClasses[size],
-        variantClasses[variant],
-        className,
-      )}
-      variant='ghost'>
-      {name}
-    </Button>
+    <Link to={`/category/${id}`}>
+      <Button
+        onClick={onClick}
+        className={cn(
+          'rounded-full font-medium cursor-pointer',
+          sizeClasses[size],
+          variantClasses[variant],
+          className,
+        )}
+        variant='ghost'>
+        {name}
+      </Button>
+    </Link>
   )
 }

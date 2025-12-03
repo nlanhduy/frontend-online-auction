@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { Filter, Search } from 'lucide-react'
-import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useMemo } from 'react'
+import { Link, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,6 +15,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
+import { ProductCard } from '@/components/ui/product-card'
 import {
   Select,
   SelectContent,
@@ -25,9 +25,7 @@ import {
 } from '@/components/ui/select'
 import { CATEGORIES, getProductsWithNewBadge, MOCK_PRODUCTS } from '@/data/mock-data'
 import { usePagination } from '@/hooks/use-pagination'
-import { SortOption, useFilterStore } from '@/store/searchFilter'
-
-import { ProductCard } from '../ui/product-card'
+import { SortOption } from '@/store/searchFilter'
 
 export function removeVietnameseDiacritics(str: string): string {
   str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a')
@@ -56,32 +54,34 @@ export const SORT_OPTIONS: { label: string; value: SortOption }[] = [
   { label: '⏰ Ending Soon', value: SortOption.ENDTIME_ASC },
 ]
 
-export default function SearchPage() {
-  const { searchQuery, searchType, sortBy, selectedCategory, setFilters } =
-    useFilterStore()
+export default function CategoryPage() {
+  const { categoryId } = useParams<{ categoryId: string }>()
+
+  // Local state for category page filters
+  const [searchQuery, setSearchQuery] = React.useState('')
+  const [sortBy, setSortBy] = React.useState<SortOption>(SortOption.RELEVANCE)
+
+  // Get current category info
+  const currentCategory = CATEGORIES.find(c => c.id === categoryId)
+  console.log({ categoryId })
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
     let products = MOCK_PRODUCTS
 
-    // Apply search filter
+    // Filter by category
+    if (categoryId) {
+      products = products.filter(p => p.categoryId === categoryId)
+    }
+
+    // Apply search filter (search within category)
     if (searchQuery.trim()) {
       const query = searchQuery.trim()
       products = products.filter(product => {
-        if (searchType === 'name' || searchType === 'all') {
-          if (searchMatch(product.name, query)) return true
-          if (searchMatch(product.description, query)) return true
-        }
-        if (searchType === 'category' || searchType === 'all') {
-          if (searchMatch(product.categoryName, query)) return true
-        }
+        if (searchMatch(product.name, query)) return true
+        if (searchMatch(product.description, query)) return true
         return false
       })
-    }
-
-    // Apply category filter
-    if (selectedCategory) {
-      products = products.filter(p => p.categoryId === selectedCategory)
     }
 
     // Apply sorting
@@ -101,31 +101,20 @@ export default function SearchPage() {
     })
 
     return getProductsWithNewBadge(sortedProducts)
-  }, [searchQuery, searchType, sortBy, selectedCategory])
+  }, [categoryId, searchQuery, sortBy])
 
   // Pagination
-  const pagination = usePagination(filteredProducts, { pageSize: 3 })
+  const pagination = usePagination(filteredProducts, { pageSize: 12 })
 
   const handleSearch = (query: string) => {
-    setFilters({ searchQuery: query })
+    setSearchQuery(query)
     pagination.goToPage(1)
   }
 
-  const handleCategoryClick = (categoryId: string) => {
-    setFilters({
-      selectedCategory: selectedCategory === categoryId ? null : categoryId,
-    })
+  const handleSortChange = (value: SortOption) => {
+    setSortBy(value)
     pagination.goToPage(1)
   }
-
-  const handleCategoryFilterChange = (categoryId: string) => {
-    setFilters({
-      selectedCategory: categoryId === 'all' ? null : categoryId,
-    })
-    pagination.goToPage(1)
-  }
-
-  //   const activeCategoryName = CATEGORIES.find(c => c.id === selectedCategory)?.name
 
   // Generate page numbers with ellipsis
   const getPageNumbers = () => {
@@ -149,101 +138,92 @@ export default function SearchPage() {
 
     return pages
   }
+
+  // If category not found
+  if (!currentCategory) {
+    return (
+      <div className='container mx-auto py-12'>
+        <div className='text-center'>
+          <h1 className='text-2xl font-bold text-gray-900 mb-4'>Category Not Found</h1>
+          <p className='text-gray-500 mb-6'>
+            The category you&apos;re looking for doesn&apos;t exist.
+          </p>
+          <Link to='/'>
+            <Button>Go to Homepage</Button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className='min-h-screen bg-gray-50'>
-      {/* Search Header */}
-      <div className='bg-white border-b sticky top-0 z-40'>
-        <div className='container mx-auto px-4 py-6'>
-          <div className='flex flex-col gap-4'>
-            {/* Main Search Bar */}
-            <div className='flex gap-2'>
-              <div className='relative flex-1'>
-                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5' />
-                <Input
-                  type='text'
-                  placeholder='Search products...'
-                  value={searchQuery}
-                  onChange={e => handleSearch(e.target.value)}
-                  className='pl-10 text-base'
-                />
-              </div>
+    <div className=''>
+      {/* Category Header */}
+      <div className='bg-linear-to-r from-blue-50 to-indigo-50 py-8 mb-8'>
+        <div className='container mx-auto'>
+          <h1 className='text-3xl font-bold text-gray-900 mb-2'>
+            {currentCategory.name}
+          </h1>
+          <p className='text-gray-600'>
+            Explore {filteredProducts.length} products in this category
+          </p>
+        </div>
+      </div>
 
-              {/* Search Type Selector */}
-              <Select
-                value={searchType}
-                onValueChange={(value: any) => setFilters({ searchType: value })}>
-                <SelectTrigger className='w-[180px]'>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='all'>All</SelectItem>
-                  <SelectItem value='name'>Product Name</SelectItem>
-                  <SelectItem value='category'>Category</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Sort Dropdown */}
-              <Select
-                value={sortBy}
-                onValueChange={(value: SortOption) => setFilters({ sortBy: value })}>
-                <SelectTrigger className='w-[180px] gap-2'>
-                  <Filter className='w-4 h-4' />
-                  <SelectValue placeholder='Sort' />
-                </SelectTrigger>
-
-                <SelectContent>
-                  {SORT_OPTIONS.map(option => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Category Filter */}
-              <Select
-                value={selectedCategory || 'all'}
-                onValueChange={handleCategoryFilterChange}>
-                <SelectTrigger className='w-[180px]'>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='all'>All Categories</SelectItem>
-                  {CATEGORIES.map(cat => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+      {/* Search and Filter Bar */}
+      <div className='container mx-auto mb-8'>
+        <div className='flex flex-col gap-4'>
+          {/* Search Bar and Sort */}
+          <div className='flex gap-2'>
+            <div className='relative flex-1'>
+              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5' />
+              <Input
+                type='text'
+                placeholder={`Search in ${currentCategory.name}...`}
+                value={searchQuery}
+                onChange={e => handleSearch(e.target.value)}
+                className='pl-10 h-12 text-base'
+              />
             </div>
 
-            {/* Filter Controls */}
-            <div className='flex gap-2 flex-wrap items-center'>
-              {/* Active filters display */}
-              {(searchQuery || selectedCategory) && (
-                <Button
-                  variant='ghost'
-                  size='sm'
-                  onClick={() => {
-                    setFilters({
-                      searchQuery: '',
-                      searchType: 'all',
-                      sortBy: SortOption.RELEVANCE,
-                      selectedCategory: null,
-                    })
-                    pagination.goToPage(1)
-                  }}>
-                  Clear Filters
-                </Button>
-              )}
-            </div>
+            {/* Sort Dropdown */}
+            <Select value={sortBy} onValueChange={handleSortChange}>
+              <SelectTrigger className='w-[200px] gap-2 h-12!'>
+                <Filter className='w-4 h-4' />
+                <SelectValue placeholder='Sort By' />
+              </SelectTrigger>
+              <SelectContent>
+                {SORT_OPTIONS.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
+          {/* Active filters display */}
+          {searchQuery && (
+            <div className='flex gap-2 items-center'>
+              <span className='text-sm text-gray-600'>
+                Searching for: <strong>&quot;{searchQuery}&quot;</strong>
+              </span>
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={() => {
+                  setSearchQuery('')
+                  pagination.goToPage(1)
+                }}>
+                Clear Search
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Products Grid */}
-      <div className='container mx-auto px-4 py-8'>
+      <div className='container mx-auto'>
         {pagination.items.length > 0 ? (
           <>
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
@@ -261,13 +241,11 @@ export default function SearchPage() {
                   highestBidder={product.highestBidder}
                   buyNowPrice={product.buyNowPrice}
                   createdAt={product.createdAt}
-                  isNew={product.isNew}
-                  onCategoryClick={() => handleCategoryClick(product.categoryId)}
                 />
               ))}
             </div>
 
-            {/* Pagination Controls with shadcn */}
+            {/* Pagination Controls */}
             {pagination.totalPages > 1 && (
               <div className='mt-12'>
                 <Pagination>
@@ -321,10 +299,21 @@ export default function SearchPage() {
           </>
         ) : (
           <div className='text-center py-12'>
-            <p className='text-gray-500 text-lg mb-4'>No products found</p>
-            <Link to='/search'>
-              <Button>View All Products</Button>
-            </Link>
+            <p className='text-gray-500 text-lg mb-4'>
+              {searchQuery
+                ? `No products found for "${searchQuery}" in ${currentCategory.name}`
+                : `No products available in ${currentCategory.name}`}
+            </p>
+            <div className='flex gap-2 justify-center'>
+              {searchQuery && (
+                <Button variant='outline' onClick={() => setSearchQuery('')}>
+                  Clear Search
+                </Button>
+              )}
+              <Link to='/search'>
+                <Button>Browse All Products</Button>
+              </Link>
+            </div>
           </div>
         )}
       </div>

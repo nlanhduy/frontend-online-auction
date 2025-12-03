@@ -36,9 +36,11 @@ import { SellerLayout } from '@/components/layout/SellerLayout'
 // import SellerSalesPage from '@/pages/seller/SalesPage'
 import { useAuthStore } from '@/store/authStore'
 
-import SearchPage from './components/search/SearchPage'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
+import CategoryPage from './pages/category/CategoryPage'
+import Homepage from './pages/homepage/Homepage'
+import SearchPage from './pages/search/SearchPage'
 
 // Enum for user roles
 export const UserRole = {
@@ -70,7 +72,6 @@ function App() {
 
   return (
     <Routes>
-      {/* Auth Routes (No Layout) */}
       <Route
         path='/login'
         element={
@@ -94,6 +95,8 @@ function App() {
         {/* <Route path='products' element={<ProductsPage />} /> */}
         {/* <Route path='products/:id' element={<ProductDetailPage />} /> */}
         {/* <Route path='search' element={<SearchPage />} /> */}
+        <Route path='/' element={<Homepage />} />
+        <Route path='/category/:categoryId' element={<CategoryPage />} />
         <Route path='/search' element={<SearchPage />} />
 
         {/* Bidder Routes */}
