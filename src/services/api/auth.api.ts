@@ -3,12 +3,12 @@ import { getHeaders, request } from '@/config/api'
 
 import type { APIParams, ApiResponse } from '@/config/api'
 
-export const APIService = {
+export const AuthAPI = {
   login({ options }: APIParams): ApiResponse {
     return request({
       method: 'post',
       headers: getHeaders(),
-      url: `${import.meta.env.VITE_SERVICE}/auth/login`,
+      url: `${import.meta.env.VITE_BACKEND_URL}/auth/login`,
       ...options,
     })
   },
@@ -17,7 +17,7 @@ export const APIService = {
     return request({
       method: 'post',
       headers: getHeaders(),
-      url: `${import.meta.env.VITE_SERVICE}/auth/register`,
+      url: `${import.meta.env.VITE_BACKEND_URL}/auth/register`,
       ...options,
     })
   },
@@ -26,7 +26,7 @@ export const APIService = {
     return request({
       method: 'post',
       headers: getHeaders(),
-      url: `${import.meta.env.VITE_SERVICE}/auth/verify-otp`,
+      url: `${import.meta.env.VITE_BACKEND_URL}/auth/verify-otp`,
       ...options,
     })
   },
@@ -35,7 +35,7 @@ export const APIService = {
     return request({
       method: 'post',
       headers: getHeaders(),
-      url: `${import.meta.env.VITE_SERVICE}/auth/resend-otp`,
+      url: `${import.meta.env.VITE_BACKEND_URL}/auth/resend-otp`,
       ...options,
     })
   },
@@ -44,7 +44,7 @@ export const APIService = {
     return request({
       method: 'post',
       headers: getHeaders(),
-      url: `${import.meta.env.VITE_SERVICE}/auth/refresh`,
+      url: `${import.meta.env.VITE_BACKEND_URL}/auth/refresh`,
       ...options,
     })
   },
@@ -53,7 +53,7 @@ export const APIService = {
     return request({
       method: 'post',
       headers: getHeaders(),
-      url: `${import.meta.env.VITE_SERVICE}/auth/logout`,
+      url: `${import.meta.env.VITE_BACKEND_URL}/auth/logout`,
       ...options,
     })
   },
@@ -62,7 +62,7 @@ export const APIService = {
     return request({
       method: 'get',
       headers: getHeaders(),
-      url: `${import.meta.env.VITE_SERVICE}/auth/me`,
+      url: `${import.meta.env.VITE_BACKEND_URL}/auth/me`,
       ...options,
     })
   },

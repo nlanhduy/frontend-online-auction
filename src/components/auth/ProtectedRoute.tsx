@@ -1,9 +1,8 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { toast } from 'sonner'
 
-import { useAuthStore } from '@/store/authStore'
-
-import type { UserRole } from '@/types/auth.types'
+import { useAuth } from '@/hooks/use-auth'
+import { UserRole } from '@/types/auth.types'
 
 interface ProtectedRouteProps {
   children?: React.ReactNode
@@ -11,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { isAuthenticated, user } = useAuthStore()
+  const { isAuthenticated, user } = useAuth()
   const location = useLocation()
 
   // Not authenticated - redirect to login
@@ -25,10 +24,10 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     toast.error('You do not have permission to access this page')
 
     const redirectMap: Record<UserRole, string> = {
-      guest: '/',
-      bidder: '/',
-      seller: '/seller/products',
-      admin: '/admin',
+      [UserRole.Guest]: '/',
+      [UserRole.Bidder]: '/',
+      [UserRole.Seller]: '/seller/products',
+      [UserRole.Admin]: '/admin',
     }
 
     return <Navigate to={redirectMap[user.role]} replace />

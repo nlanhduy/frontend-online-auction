@@ -2,8 +2,8 @@
 'use client'
 
 import { Filter, Search } from 'lucide-react'
-import { useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -23,12 +23,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { CATEGORIES, getProductsWithNewBadge, MOCK_PRODUCTS } from '@/data/mock-data'
+import { QUERY_KEYS } from '@/constants/queryKey'
+import { CATEGORIES } from '@/data/mock-data'
+import { useDebouncedSearch } from '@/hooks/use-debounced-search'
 import { usePagination } from '@/hooks/use-pagination'
-import { SortOption, useFilterStore } from '@/store/searchFilter'
+import { getPageNumbers } from '@/lib/utils'
+import { ProductAPI } from '@/services/api/product.api'
+import {
+  SEARCH_TYPE_OPTIONS,
+  SORT_OPTION,
+  SORT_OPTIONS,
+  useFilterStore,
+} from '@/store/searchFilter'
+import { useQuery } from '@tanstack/react-query'
 
 import { ProductCard } from '../../components/ui/product-card'
 
+import type { SortOption } from '@/store/searchFilter'
 export function removeVietnameseDiacritics(str: string): string {
   str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a')
   str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, 'e')
@@ -48,107 +59,71 @@ export function searchMatch(text: string, query: string): boolean {
   return normalizedText.includes(normalizedQuery)
 }
 
-export const SORT_OPTIONS: { label: string; value: SortOption }[] = [
-  { label: 'Most Relevant', value: SortOption.RELEVANCE },
-  { label: '🆕 Newly Posted', value: SortOption.NEWEST },
-  { label: '💰 Price: Up ↑', value: SortOption.PRICE_ASC },
-  { label: '💰 Price: Down ↓', value: SortOption.PRICE_DESC },
-  { label: '⏰ Ending Soon', value: SortOption.ENDTIME_ASC },
-]
-
 export default function SearchPage() {
+  const [searchParams] = useSearchParams()
+
+  const q = searchParams.get('q')
   const { searchQuery, searchType, sortBy, selectedCategory, setFilters } =
     useFilterStore()
 
-  // Filter and sort products
-  const filteredProducts = useMemo(() => {
-    let products = MOCK_PRODUCTS
-
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.trim()
-      products = products.filter(product => {
-        if (searchType === 'name' || searchType === 'all') {
-          if (searchMatch(product.name, query)) return true
-          if (searchMatch(product.description, query)) return true
-        }
-        if (searchType === 'category' || searchType === 'all') {
-          if (searchMatch(product.categoryName, query)) return true
-        }
-        return false
-      })
+  useEffect(() => {
+    if (q && searchQuery !== q) {
+      setFilters({ searchQuery: q })
     }
+  }, [q])
 
-    // Apply category filter
-    if (selectedCategory) {
-      products = products.filter(p => p.categoryId === selectedCategory)
-    }
+  const debouncedQuery = useDebouncedSearch(searchQuery, 500)
 
-    // Apply sorting
-    const sortedProducts = [...products].sort((a, b) => {
-      switch (sortBy) {
-        case SortOption.PRICE_ASC:
-          return a.currentPrice - b.currentPrice
-        case SortOption.PRICE_DESC:
-          return b.currentPrice - a.currentPrice
-        case SortOption.ENDTIME_ASC:
-          return a.endTime.getTime() - b.endTime.getTime()
-        case SortOption.NEWEST:
-          return b.createdAt.getTime() - a.createdAt.getTime()
-        default:
-          return 0
-      }
-    })
+  // Fetch all products without pagination from API
+  const apiParams = useMemo(
+    () => ({
+      query: debouncedQuery.trim() || undefined,
+      searchType: debouncedQuery.trim() ? searchType : undefined,
+      sortBy: sortBy,
+      categoryId: selectedCategory || undefined,
+    }),
+    [debouncedQuery, searchType, sortBy, selectedCategory],
+  )
 
-    return getProductsWithNewBadge(sortedProducts)
-  }, [searchQuery, searchType, sortBy, selectedCategory])
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: QUERY_KEYS.products.search(apiParams),
+    queryFn: () =>
+      ProductAPI.searchProducts({
+        options: {
+          params: apiParams,
+        },
+      }),
+    staleTime: 1000 * 60 * 5,
+  })
 
-  // Pagination
-  const pagination = usePagination(filteredProducts, { pageSize: 12 })
+  const allProducts = data?.data?.products || []
+
+  // Use client-side pagination
+  const {
+    items: products,
+    currentPage,
+    totalPages,
+    totalItems,
+    hasPrevious,
+    hasNext,
+    goToPage,
+    nextPage,
+    previousPage,
+  } = usePagination(allProducts, {
+    pageSize: 8,
+    initialPage: 1,
+  })
 
   const handleSearch = (query: string) => {
     setFilters({ searchQuery: query })
-    pagination.goToPage(1)
   }
-
-  // const handleCategoryClick = (categoryId: string) => {
-  //   setFilters({
-  //     selectedCategory: selectedCategory === categoryId ? null : categoryId,
-  //   })
-  //   pagination.goToPage(1)
-  // }
 
   const handleCategoryFilterChange = (categoryId: string) => {
     setFilters({
       selectedCategory: categoryId === 'all' ? null : categoryId,
     })
-    pagination.goToPage(1)
   }
 
-  //   const activeCategoryName = CATEGORIES.find(c => c.id === selectedCategory)?.name
-
-  // Generate page numbers with ellipsis
-  const getPageNumbers = () => {
-    const pages: (number | 'ellipsis')[] = []
-    const totalPages = pagination.totalPages
-    const currentPage = pagination.currentPage
-
-    if (totalPages <= 7) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i)
-      }
-    } else {
-      pages.push(1)
-      if (currentPage > 3) pages.push('ellipsis')
-      const start = Math.max(2, currentPage - 1)
-      const end = Math.min(totalPages - 1, currentPage + 1)
-      for (let i = start; i <= end; i++) pages.push(i)
-      if (currentPage < totalPages - 2) pages.push('ellipsis')
-      pages.push(totalPages)
-    }
-
-    return pages
-  }
   return (
     <div className=''>
       {/* Search Header */}
@@ -176,23 +151,25 @@ export default function SearchPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='all'>All</SelectItem>
-                  <SelectItem value='name'>Product Name</SelectItem>
-                  <SelectItem value='category'>Category</SelectItem>
+                  {SEARCH_TYPE_OPTIONS.map(type => (
+                    <SelectItem value={type.value} key={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
               {/* Sort Dropdown */}
               <Select
-                value={sortBy}
+                value={sortBy || undefined}
                 onValueChange={(value: SortOption) => setFilters({ sortBy: value })}>
-                <SelectTrigger className='w-[180px] gap-2 h-12!'>
+                <SelectTrigger className='w-[180px] h-12! gap-2'>
                   <Filter className='w-4 h-4' />
                   <SelectValue placeholder='Sort' />
                 </SelectTrigger>
 
                 <SelectContent>
-                  {SORT_OPTIONS.map(option => (
+                  {SORT_OPTIONS.filter(o => o.value !== '').map(option => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
@@ -228,11 +205,10 @@ export default function SearchPage() {
                   onClick={() => {
                     setFilters({
                       searchQuery: '',
-                      searchType: 'all',
-                      sortBy: SortOption.RELEVANCE,
+                      searchType: 'both',
+                      sortBy: SORT_OPTION.RELEVANCE,
                       selectedCategory: null,
                     })
-                    pagination.goToPage(1)
                   }}>
                   Clear Filters
                 </Button>
@@ -244,51 +220,52 @@ export default function SearchPage() {
 
       {/* Products Grid */}
       <div className='container mx-auto pt-10'>
-        {pagination.items.length > 0 ? (
+        {isLoading ? (
+          <div className='text-center py-12'>
+            <p className='text-gray-500 text-lg'>Loading products...</p>
+          </div>
+        ) : isError ? (
+          <div className='text-center py-12'>
+            <p className='text-red-500 text-lg mb-4'>
+              Error loading products: {error?.message || 'Unknown error'}
+            </p>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+          </div>
+        ) : products.length > 0 ? (
           <>
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
-              {pagination.items.map(product => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  image={product.images[0]}
-                  currentPrice={product.currentPrice}
-                  categoryName={product.categoryName}
-                  categoryId={product.categoryId}
-                  endTime={product.endTime}
-                  bidCount={product.bidCount}
-                  highestBidder={product.highestBidder}
-                  buyNowPrice={product.buyNowPrice}
-                  createdAt={product.createdAt}
-                />
+              {products.map((product: any) => (
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
 
             {/* Pagination Controls with shadcn */}
-            {pagination.totalPages > 1 && (
+            {totalPages > 1 && (
               <div className='mt-12'>
                 <Pagination>
                   <PaginationContent>
                     <PaginationItem>
                       <PaginationPrevious
-                        onClick={pagination.previousPage}
+                        onClick={previousPage}
                         className={
-                          !pagination.hasPrevious
+                          !hasPrevious
                             ? 'pointer-events-none opacity-50'
                             : 'cursor-pointer'
                         }
                       />
                     </PaginationItem>
 
-                    {getPageNumbers().map((page, index) => (
+                    {getPageNumbers({
+                      totalPages,
+                      currentPage: currentPage as number,
+                    }).map((page, index) => (
                       <PaginationItem key={index}>
                         {page === 'ellipsis' ? (
                           <PaginationEllipsis />
                         ) : (
                           <PaginationLink
-                            onClick={() => pagination.goToPage(page)}
-                            isActive={pagination.currentPage === page}
+                            onClick={() => goToPage(page)}
+                            isActive={currentPage === page}
                             className='cursor-pointer'>
                             {page}
                           </PaginationLink>
@@ -298,11 +275,9 @@ export default function SearchPage() {
 
                     <PaginationItem>
                       <PaginationNext
-                        onClick={pagination.nextPage}
+                        onClick={nextPage}
                         className={
-                          !pagination.hasNext
-                            ? 'pointer-events-none opacity-50'
-                            : 'cursor-pointer'
+                          !hasNext ? 'pointer-events-none opacity-50' : 'cursor-pointer'
                         }
                       />
                     </PaginationItem>
@@ -313,8 +288,8 @@ export default function SearchPage() {
 
             {/* Page info */}
             <div className='text-center text-sm text-gray-600 mt-4'>
-              Page {pagination.currentPage} of {pagination.totalPages} (
-              {pagination.items.length} products)
+              Page {currentPage} of {totalPages} ({products.length} of {totalItems}{' '}
+              products)
             </div>
           </>
         ) : (

@@ -2,74 +2,17 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { GuestRoute } from '@/components/auth/GuestRoute'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
-// Layouts
-import { AdminLayout } from '@/components/layout/AdminLayout'
-import { BidderLayout } from '@/components/layout/BidderLayout'
-import { GuestLayout } from '@/components/layout/GuestLayout'
-import { SellerLayout } from '@/components/layout/SellerLayout'
-// Pages - Admin (commented if not available)
-// import AdminCategoriesPage from '@/pages/admin/CategoriesPage'
-// import AdminDashboard from '@/pages/admin/DashboardPage'
-// import AdminProductsPage from '@/pages/admin/ProductsPage'
-// import AdminSellerRequestsPage from '@/pages/admin/SellerRequestsPage'
-// import AdminSettingsPage from '@/pages/admin/SettingsPage'
-// import AdminUsersPage from '@/pages/admin/UsersPage'
-// Pages - Auth
-// import LoginPage from '@/pages/auth/LoginPage'
-// import RegisterPage from '@/pages/auth/RegisterPage'
-// Pages - Public
-// import HomePage from '@/pages/HomePage'
-// import ProductDetailPage from '@/pages/ProductDetailPage'
-// import ProductsPage from '@/pages/ProductsPage'
-// import SearchPage from '@/pages/SearchPage'
-// Pages - Bidder
-// import ProfilePage from '@/pages/profile/ProfilePage'
-// import WatchlistPage from '@/pages/profile/WatchlistPage'
-// import MyBidsPage from '@/pages/profile/MyBidsPage'
-// import MyWinsPage from '@/pages/profile/MyWinsPage'
-// import SettingsPage from '@/pages/profile/SettingsPage'
-// import UpgradeSellerPage from '@/pages/profile/UpgradeSellerPage'
-// Pages - Seller
-// import CreateProductPage from '@/pages/seller/CreateProductPage'
-// import EditProductPage from '@/pages/seller/EditProductPage'
-// import SellerProductsPage from '@/pages/seller/ProductsPage'
-// import SellerSalesPage from '@/pages/seller/SalesPage'
-import { useAuthStore } from '@/store/authStore'
 
+import { Layout } from './components/layout/Layout'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import CategoryPage from './pages/category/CategoryPage'
 import Homepage from './pages/homepage/Homepage'
+import ProductDetail from './pages/product/Product'
 import SearchPage from './pages/search/SearchPage'
-
-// Enum for user roles
-export const UserRole = {
-  Guest: 'guest',
-  Bidder: 'bidder',
-  Seller: 'seller',
-  Admin: 'admin',
-} as const
+import { UserRole } from './types/auth.types'
 
 function App() {
-  const { isAuthenticated, user } = useAuthStore()
-
-  const getLayout = () => {
-    if (!isAuthenticated || !user) return GuestLayout
-
-    switch (user.role) {
-      case UserRole.Admin:
-        return AdminLayout
-      case UserRole.Seller:
-        return SellerLayout
-      case UserRole.Bidder:
-        return BidderLayout
-      default:
-        return GuestLayout
-    }
-  }
-
-  const Layout = getLayout()
-
   return (
     <Routes>
       <Route
@@ -98,6 +41,7 @@ function App() {
         <Route path='/' element={<Homepage />} />
         <Route path='/category/:categoryId' element={<CategoryPage />} />
         <Route path='/search' element={<SearchPage />} />
+        <Route path='/product/:productId' element={<ProductDetail />} />
 
         {/* Bidder Routes */}
         <Route

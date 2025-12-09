@@ -1,3 +1,5 @@
+import type { SearchProductsParams } from '@/types/product.type'
+
 export const QUERY_KEYS = {
   // Auth related
   auth: {
@@ -13,5 +15,16 @@ export const QUERY_KEYS = {
   user: {
     profile: (userId: string) => ['user', 'profile', userId] as const,
     all: ['user', 'all'] as const,
+  },
+
+  // Products related
+  products: {
+    homepage: ['products', 'homepage'] as const,
+    search: (params: SearchProductsParams) => ['products', 'search', params] as const,
+    detail: (productId: string) => ['products', 'detail', productId] as const,
+  },
+
+  categories: {
+    all: ['categories', 'all'] as const,
   },
 } as const

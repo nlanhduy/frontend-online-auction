@@ -1,38 +1,54 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// src/hooks/auth.hooks.ts
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { QUERY_KEYS } from '@/constants/queryKey'
-import { APIService } from '@/services/api'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { AuthAPI } from '@/services/api/auth.api'
+import { useAuthStore } from '@/store/authStore'
+import { useMutation, useQuery } from '@tanstack/react-query'
+
+// Hook to get auth state from Zustand
+export const useAuth = () => {
+  const user = useAuthStore(state => state.user)
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated)
+  const accessToken = useAuthStore(state => state.accessToken)
+
+  return {
+    user,
+    isAuthenticated,
+    accessToken,
+  }
+}
 
 // Login Mutation
 export const useLogin = () => {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
+  const setAuth = useAuthStore(state => state.setAuth)
 
   return useMutation({
     mutationKey: QUERY_KEYS.auth.login,
     mutationFn: async (data: any) => {
-      const response = await APIService.login({
+      const response = await AuthAPI.login({
         options: { data },
       })
       return response.data
     },
     onSuccess: (data: any) => {
-      // Store tokens
-      localStorage.setItem('accessToken', data.tokens.accessToken)
-      //TODO: set cookie here
-      localStorage.setItem('refreshToken', data.tokens.refreshToken)
+      if (data.user && data.accessToken) {
+        setAuth(data.user, data.accessToken)
 
-      // Update query cache
-      queryClient.setQueryData(QUERY_KEYS.auth.me, data.user)
+        toast.success('Login successful!', {
+          description: 'Welcome back to AuctionHub',
+        })
 
-      toast.success('Login successful!', {
-        description: 'Welcome back to AuctionHub',
-      })
-
-      navigate('/')
+        navigate('/')
+      } else {
+        console.error('Invalid login response structure:', data)
+        toast.error('Login failed', {
+          description: 'Invalid response from server',
+        })
+      }
     },
     onError: (error: any) => {
       toast.error('Login failed', {
@@ -48,7 +64,7 @@ export const useRegister = (onSuccess?: (email: string) => void) => {
   return useMutation({
     mutationKey: QUERY_KEYS.auth.register,
     mutationFn: async (data: any) => {
-      const response = await APIService.register({
+      const response = await AuthAPI.register({
         options: { data },
       })
       return response.data
@@ -79,7 +95,7 @@ export const useVerifyOTP = (onSuccess?: () => void) => {
   return useMutation({
     mutationKey: QUERY_KEYS.auth.verifyOTP,
     mutationFn: async (data: any) => {
-      const response = await APIService.verifyOTP({
+      const response = await AuthAPI.verifyOTP({
         options: { data },
       })
       return response.data
@@ -109,7 +125,7 @@ export const useResendOTP = () => {
   return useMutation({
     mutationKey: QUERY_KEYS.auth.resendOTP,
     mutationFn: async (data: any) => {
-      const response = await APIService.resendOTP({
+      const response = await AuthAPI.resendOTP({
         options: { data },
       })
       return response.data
@@ -130,32 +146,26 @@ export const useResendOTP = () => {
 // Logout Mutation
 export const useLogout = () => {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
+  const clearAuth = useAuthStore(state => state.clearAuth)
 
   return useMutation({
     mutationKey: QUERY_KEYS.auth.logout,
     mutationFn: async () => {
-      const response = await APIService.logout({
+      const response = await AuthAPI.logout({
         options: {},
       })
       return response.data
     },
     onSuccess: () => {
-      // Clear tokens
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
-
-      // Clear all queries
-      queryClient.clear()
+      // Clear Zustand store (also clears localStorage via persist middleware)
+      clearAuth()
 
       toast.success('Logged out successfully')
       navigate('/login')
     },
     onError: () => {
-      // Still clear tokens even if API fails
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
-      queryClient.clear()
+      // Still clear auth even if API fails
+      clearAuth()
       navigate('/login')
     },
   })
@@ -163,16 +173,31 @@ export const useLogout = () => {
 
 // Get Current User Query
 export const useCurrentUser = () => {
+  const accessToken = useAuthStore(state => state.accessToken)
+  const setUser = useAuthStore(state => state.setUser)
+  const clearAuth = useAuthStore(state => state.clearAuth)
+
   return useQuery({
     queryKey: QUERY_KEYS.auth.me,
     queryFn: async () => {
-      const response = await APIService.getMe({
+      const response = await AuthAPI.getMe({
         options: {},
       })
       return response.data
     },
-    enabled: !!localStorage.getItem('accessToken'),
+    enabled: !!accessToken,
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: false,
+    select: data => {
+      // Update user in Zustand store when data is fetched
+      setUser(data)
+      return data
+    },
+    // Fallback to clear auth if query fails
+    meta: {
+      onError: () => {
+        clearAuth()
+      },
+    },
   })
 }

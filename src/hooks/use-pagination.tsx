@@ -50,18 +50,21 @@ export function usePagination<T>(
   const goToPage = (page: number) => {
     const maxPage = Math.ceil(items.length / pageSize)
     setCurrentPage(Math.max(1, Math.min(page, maxPage || 1)))
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const nextPage = () => {
     if (pagination.hasNext) {
       setCurrentPage(prev => prev + 1)
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const previousPage = () => {
     if (pagination.hasPrevious) {
       setCurrentPage(prev => prev - 1)
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return {

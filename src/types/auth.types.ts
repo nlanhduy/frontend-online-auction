@@ -1,8 +1,8 @@
 export const UserRole = {
-  Guest: 'guest',
-  Bidder: 'bidder',
-  Seller: 'seller',
-  Admin: 'admin',
+  Guest: 'GUEST',
+  Bidder: 'BIDDER',
+  Seller: 'SELLER',
+  Admin: 'ADMIN',
 } as const
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
@@ -15,13 +15,25 @@ export interface User {
   avatar?: string
   rating?: number
   createdAt: string
-  // TODO: Check schema of user
+}
+
+export interface AuthTokens {
+  accessToken: string
+  // refreshToken is stored in httpOnly cookie, not in client
+}
+
+export interface LoginResponse {
+  user: User
+  accessToken: string
+  // refreshToken is set in cookie by backend
+}
+
+export interface RegisterResponse {
+  email: string
+  message?: string
 }
 
 export interface AuthState {
   user: User | null
   isAuthenticated: boolean
-  login: (user: User, tokens: { accessToken: string; refreshToken: string }) => void
-  logout: () => void
-  updateUser: (user: Partial<User>) => void
 }

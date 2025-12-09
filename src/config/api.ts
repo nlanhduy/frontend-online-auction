@@ -7,6 +7,7 @@ export type ApiResponse<T = any> = Promise<AxiosResponse<T>>
 
 export interface APIParams {
   options?: AxiosRequestConfig
+  variables?: any
 }
 
 export const axiosInstance = axios.create({
@@ -56,7 +57,7 @@ axiosInstance.interceptors.response.use(
         // Clear tokens and redirect to login
         localStorage.removeItem('accessToken')
         localStorage.removeItem('refreshToken')
-        window.location.href = '/login'
+        // window.location.href = '/login'
         return Promise.reject(refreshError)
       }
     }
