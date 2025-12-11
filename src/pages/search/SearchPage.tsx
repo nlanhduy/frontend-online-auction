@@ -125,7 +125,7 @@ export default function SearchPage() {
   }
 
   return (
-    <div className=''>
+    <div className='py-12'>
       {/* Search Header */}
       <div className=''>
         <div className='container mx-auto'>

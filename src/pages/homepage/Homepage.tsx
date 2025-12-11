@@ -51,7 +51,7 @@ function Homepage() {
   ]
 
   return (
-    <div className='container mx-auto flex flex-col gap-16'>
+    <div className='container mx-auto flex flex-col gap-16 py-12'>
       {sections.map((section, index) => (
         <div key={index}>
           <h2 className='text-2xl font-bold mb-6 text-gray-900'>{section.title}</h2>

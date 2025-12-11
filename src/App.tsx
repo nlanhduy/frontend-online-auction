@@ -10,6 +10,7 @@ import CategoryPage from './pages/category/CategoryPage'
 import Homepage from './pages/homepage/Homepage'
 import ProductDetail from './pages/product/Product'
 import SearchPage from './pages/search/SearchPage'
+import WatchListPage from './pages/watchList/WatchListPage'
 import { UserRole } from './types/auth.types'
 
 function App() {
@@ -34,10 +35,6 @@ function App() {
 
       {/* Public Routes with appropriate layout */}
       <Route element={<Layout />}>
-        {/* <Route index element={<HomePage />} /> */}
-        {/* <Route path='products' element={<ProductsPage />} /> */}
-        {/* <Route path='products/:id' element={<ProductDetailPage />} /> */}
-        {/* <Route path='search' element={<SearchPage />} /> */}
         <Route path='/' element={<Homepage />} />
         <Route path='/category/:categoryId' element={<CategoryPage />} />
         <Route path='/search' element={<SearchPage />} />
@@ -57,7 +54,7 @@ function App() {
           path='watchlist'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Bidder, UserRole.Seller]}>
-              {/* <WatchlistPage /> */}
+              <WatchListPage />
             </ProtectedRoute>
           }
         />

@@ -1,5 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios'
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useAuthStore } from '@/store/authStore'
 
 import type { AxiosRequestConfig, AxiosResponse } from 'axios'
 
@@ -17,9 +19,10 @@ export const axiosInstance = axios.create({
   },
 })
 
+// Request interceptor
 axiosInstance.interceptors.request.use(
   config => {
-    const token = localStorage.getItem('accessToken')
+    const token = useAuthStore.getState().accessToken
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
@@ -43,19 +46,27 @@ axiosInstance.interceptors.response.use(
       try {
         // TODO: read refresh token from cookies
         const refreshToken = localStorage.getItem('refreshToken')
+
+        if (!refreshToken) {
+          throw new Error('No refresh token available')
+        }
+
         const response = await axios.post(
           `${import.meta.env.VITE_IAM_SERVICE}/auth/refresh`,
           { refreshToken },
         )
 
-        const { accessToken } = response.data
-        localStorage.setItem('accessToken', accessToken)
+        const { accessToken, user } = response.data
 
+        // Cập nhật token mới vào Zustand store
+        useAuthStore.getState().setAuth(user, accessToken)
+
+        // Retry request với token mới
         originalRequest.headers.Authorization = `Bearer ${accessToken}`
         return axiosInstance(originalRequest)
       } catch (refreshError) {
-        // Clear tokens and redirect to login
-        localStorage.removeItem('accessToken')
+        // Clear auth state and redirect to login
+        useAuthStore.getState().clearAuth()
         localStorage.removeItem('refreshToken')
         // window.location.href = '/login'
         return Promise.reject(refreshError)

@@ -27,4 +27,11 @@ export const QUERY_KEYS = {
   categories: {
     all: ['categories', 'all'] as const,
   },
+
+  watchList: {
+    all: ['watch-list', 'all'] as const,
+    check: (productId: string) => ['watch-list', 'check', productId] as const,
+    add: (productId: string) => ['watch-list', 'add', productId] as const,
+    remove: (productId: string) => ['watch-list', 'remove', productId] as const,
+  },
 } as const

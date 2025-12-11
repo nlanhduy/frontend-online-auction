@@ -1,28 +1,53 @@
 'use client'
 
-import { Clock, Gavel, Zap } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Clock, Gavel, Heart, Zap } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
+import { useAuth } from '@/hooks/use-auth'
+import { useAddToWatchList } from '@/hooks/use-watchlist'
 import { cn, formatPrice, getTimeRemaining, isProductNew } from '@/lib/utils'
 
+import { ActionMenu } from './action-menu'
 import { CategoryTag } from './category-tag'
 import { ShineBorder } from './shine-border'
 
+import type { Action } from './action-menu'
 import type { Product } from '@/types/product.type'
 
 interface ProductCardProps {
   product: Product
   size?: 'medium' | 'large'
-  onCategoryClick?: (categoryId: string) => void
+  actions?: Action[]
 }
 
-function MediumProductCard({ product, onCategoryClick }: ProductCardProps) {
+function MediumProductCard({ product, actions }: ProductCardProps) {
+  const navigate = useNavigate()
   const isNew = isProductNew(product.createdAt)
+
+  const handleCategoryClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    navigate(`/category/${product.category.id}`)
+  }
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Only navigate if clicking on the card itself, not on interactive elements
+    const target = e.target as HTMLElement
+    if (
+      target.closest('button') ||
+      target.closest('[data-category-tag]') ||
+      target.tagName === 'A'
+    ) {
+      return
+    }
+    navigate(`/product/${product.id}`)
+  }
 
   return (
     <Card
+      onClick={handleCardClick}
       className={cn(
         'overflow-hidden hover:shadow-lg transition-shadow h-full cursor-pointer relative flex flex-col p-4',
       )}>
@@ -35,8 +60,10 @@ function MediumProductCard({ product, onCategoryClick }: ProductCardProps) {
         />
       )}
 
+      <ActionMenu actions={actions} />
+
       {isNew && (
-        <div className='absolute top-2 right-2 z-10'>
+        <div className='absolute top-2 left-2 z-10'>
           <Badge className='bg-yellow-400 text-yellow-900 animate-pulse'>🆕 NEW</Badge>
         </div>
       )}
@@ -50,14 +77,9 @@ function MediumProductCard({ product, onCategoryClick }: ProductCardProps) {
       </div>
 
       <div className='flex flex-col gap-3 flex-1 p-4'>
-        <CategoryTag
-          name={product.category.name}
-          size='sm'
-          onClick={e => {
-            e.preventDefault()
-            onCategoryClick?.(product.category.id)
-          }}
-        />
+        <div onClick={handleCategoryClick} data-category-tag>
+          <CategoryTag name={product.category.name} size='sm' />
+        </div>
 
         <h3 className='text-sm font-semibold line-clamp-2 hover:text-blue-600'>
           {product.name}
@@ -99,13 +121,33 @@ function MediumProductCard({ product, onCategoryClick }: ProductCardProps) {
   )
 }
 
-function LargeProductCard({ product, onCategoryClick }: ProductCardProps) {
+function LargeProductCard({ product, actions }: ProductCardProps) {
+  const navigate = useNavigate()
   const isNew = isProductNew(product.createdAt)
+
+  const handleCategoryClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    navigate(`/category/${product.category.id}`)
+  }
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement
+    if (
+      target.closest('button') ||
+      target.closest('[data-category-tag]') ||
+      target.tagName === 'A'
+    ) {
+      return
+    }
+    navigate(`/product/${product.id}`)
+  }
 
   return (
     <Card
+      onClick={handleCardClick}
       className={cn(
-        'overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-row gap-0! h-full p-4',
+        'overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-row relative gap-0! h-full p-4',
       )}>
       {isNew && (
         <ShineBorder
@@ -115,6 +157,8 @@ function LargeProductCard({ product, onCategoryClick }: ProductCardProps) {
           className='rounded-lg'
         />
       )}
+
+      <ActionMenu actions={actions} />
 
       <div className='relative w-1/2 shrink-0 overflow-hidden bg-gray-100'>
         <img
@@ -135,14 +179,9 @@ function LargeProductCard({ product, onCategoryClick }: ProductCardProps) {
 
       <div className='w-1/2 flex flex-col justify-between pl-4 gap-4'>
         <div className='space-y-3'>
-          <CategoryTag
-            name={product.category.name}
-            size='sm'
-            onClick={e => {
-              e.preventDefault()
-              onCategoryClick?.(product.category.id)
-            }}
-          />
+          <div onClick={handleCategoryClick} data-category-tag>
+            <CategoryTag name={product.category.name} size='sm' />
+          </div>
 
           <h3 className='text-lg font-bold text-gray-900 line-clamp-2 hover:text-blue-600'>
             {product.name}
@@ -188,16 +227,27 @@ function LargeProductCard({ product, onCategoryClick }: ProductCardProps) {
 
 export function ProductCard(props: ProductCardProps) {
   const { size = 'medium', product } = props
+  const { isAuthenticated } = useAuth()
+
+  const addToWatchList = useAddToWatchList()
+  const handleAddToWatchList = () => {
+    addToWatchList.mutate(product.id)
+  }
+
+  const defaultActions: Action[] = [
+    { label: 'Add to watch list', action: handleAddToWatchList, icon: <Heart /> },
+  ]
+
+  // Use custom actions if provided, otherwise use default actions
+  const actions = props.actions || (isAuthenticated ? defaultActions : [])
 
   return (
-    <Link to={`/product/${product.id}`}>
-      <div className='relative h-full'>
-        {size === 'large' ? (
-          <LargeProductCard {...props} />
-        ) : (
-          <MediumProductCard {...props} />
-        )}
-      </div>
-    </Link>
+    <div className='relative h-full'>
+      {size === 'large' ? (
+        <LargeProductCard {...props} actions={actions} />
+      ) : (
+        <MediumProductCard {...props} actions={actions} />
+      )}
+    </div>
   )
 }
