@@ -1,27 +1,38 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Clock, Gavel, Heart, Package, ShoppingCart, User } from 'lucide-react'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
+import { toast } from 'sonner'
 
+import {
+  CreateQuestionNode,
+  ProductQuestionTree,
+} from '@/components/ui/product-question-tree'
 import { QUERY_KEYS } from '@/constants/queryKey'
 import { useAuth } from '@/hooks/use-auth'
 import { useAddToWatchList, useRemoveFromWatchList } from '@/hooks/use-watchlist'
-import { formatPrice, getTimeRemaining } from '@/lib/utils'
+import { formatPrice, getTimeRemaining, handleApiError } from '@/lib/utils'
 import { ProductAPI } from '@/services/api/product.api'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { Product } from '@/types/product.type'
 export default function ProductDetail() {
   const { productId } = useParams<{ productId: string }>()
   const [selectedImage, setSelectedImage] = useState(0)
   const [bidAmount, setBidAmount] = useState(0)
+  const [replyingToId, setReplyingToId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
 
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
+  const queryClient = useQueryClient()
+
   const productDetailQuery = useQuery<Product>({
     queryKey: QUERY_KEYS.products.detail(productId ?? ''),
     queryFn: async () => {
       const response = await ProductAPI.getProductDetail({
         variables: { productId: productId! },
       })
+
       return response.data
     },
     enabled: !!productId,
@@ -34,26 +45,170 @@ export default function ProductDetail() {
       const response = await ProductAPI.checkExistedItemWatchList({
         variables: { productId: productId! },
       })
-      console.log({ response })
       return response.data
     },
     enabled: !!productId && isAuthenticated,
     staleTime: 1000 * 60 * 5,
   })
 
+  const productQuestionsQuery = useQuery({
+    queryKey: QUERY_KEYS.questions.list(productId ?? ''),
+    queryFn: async () => {
+      let response
+      if (!isAuthenticated) {
+        response = await ProductAPI.getPublicProductQuestions({
+          variables: { productId: productId! },
+        })
+      } else {
+        response = await ProductAPI.getAuthProductQuestions({
+          variables: { productId: productId! },
+        })
+      }
+
+      return response.data
+    },
+    enabled: !!productId,
+    staleTime: 1000 * 60 * 5,
+  })
+
   const addToWatchList = useAddToWatchList()
+  const removeFromWatchList = useRemoveFromWatchList()
+
   const handleAddToWatchList = () => {
     addToWatchList.mutate(product?.id ?? '')
   }
 
-  const removeFromWatchList = useRemoveFromWatchList()
   const handleRemoveFromWatchList = () => {
     removeFromWatchList.mutate(product?.id ?? '')
   }
 
-  const isExistedInWatchList = checkExistedItemQuery?.data?.isFavorite
+  // Create question mutation
+  const createQuestionMutation = useMutation({
+    mutationFn: async ({
+      productId,
+      content,
+      parentId,
+    }: {
+      productId: string
+      content: string
+      parentId?: string | null
+    }) => {
+      const response = await ProductAPI.createProductQuestions({
+        options: {
+          data: {
+            productId,
+            content,
+            parentId,
+          },
+        },
+      })
+      return response.data
+    },
+    onSuccess: () => {
+      toast.success('Create question successfully')
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.questions.list(productId ?? ''),
+      })
+      setReplyingToId(null)
+    },
+    onError: (err: any) => {
+      handleApiError(err)
+    },
+  })
 
+  const handleCreateQuestion = (content: string) => {
+    if (!productId) return
+
+    createQuestionMutation.mutate({
+      productId,
+      content,
+      parentId: null,
+    })
+  }
+
+  // Update question mutation
+  const updateQuestionMutation = useMutation({
+    mutationFn: async ({
+      questionId,
+      content,
+    }: {
+      questionId: string
+      content: string
+    }) => {
+      const response = await ProductAPI.updateProductQuestions({
+        variables: { questionId },
+        options: {
+          data: { content },
+        },
+      })
+      return response.data
+    },
+    onSuccess: () => {
+      toast.success('Update question successfully')
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.questions.list(productId ?? ''),
+      })
+      setEditingId(null)
+    },
+    onError: (err: any) => {
+      handleApiError(err)
+    },
+  })
+  const deleteQuestionMutation = useMutation({
+    mutationFn: async ({ questionId }: { questionId: string }) => {
+      const response = await ProductAPI.deleteProductQuestions({
+        variables: { questionId },
+      })
+      return response.data
+    },
+    onSuccess: () => {
+      toast.success('Delete question successfully')
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.questions.list(productId ?? ''),
+      })
+    },
+    onError: (err: any) => {
+      handleApiError(err)
+    },
+  })
+
+  const handleUpdateContent = (id: string, newContent: string) => {
+    updateQuestionMutation.mutate({
+      questionId: id,
+      content: newContent,
+    })
+  }
+
+  const handleAddReply = (parentId: string) => {
+    if (replyingToId === parentId) {
+      setReplyingToId(null)
+      return
+    }
+    setReplyingToId(parentId)
+  }
+
+  const handleDelete = (id: string) => {
+    if (!id) return
+    deleteQuestionMutation.mutate({ questionId: id })
+  }
+
+  const handleSaveReply = (parentId: string, content: string) => {
+    if (!productId) return
+
+    createQuestionMutation.mutate({
+      productId,
+      content,
+      parentId,
+    })
+  }
+
+  const handleCancelReply = () => {
+    setReplyingToId(null)
+  }
+
+  const isExistedInWatchList = checkExistedItemQuery?.data?.isFavorite
   const product = productDetailQuery.data
+
   if (!product) return <></>
 
   return (
@@ -230,6 +385,40 @@ export default function ProductDetail() {
               ))}
             </ul>
           </div>
+        )}
+      </div>
+
+      <div className='mt-8 bg-white rounded-lg p-6'>
+        <h2 className='text-2xl font-bold mb-4'>Product Q&A</h2>
+        {productQuestionsQuery.isLoading ? (
+          <p className='text-gray-500'>Loading questions...</p>
+        ) : productQuestionsQuery.isError ? (
+          <p className='text-red-500'>Error loading questions</p>
+        ) : (
+          <>
+            {(createQuestionMutation.isPending || updateQuestionMutation.isPending) && (
+              <div className='mb-4 p-3 bg-blue-50 text-blue-700 rounded-lg text-sm'>
+                Saving changes...
+              </div>
+            )}
+
+            {isAuthenticated && (
+              <CreateQuestionNode user={user} onCreateQuestion={handleCreateQuestion} />
+            )}
+
+            <ProductQuestionTree
+              questions={productQuestionsQuery.data || []}
+              onUpdateContent={handleUpdateContent}
+              onAddReply={handleAddReply}
+              onSaveReply={handleSaveReply}
+              onCancelReply={handleCancelReply}
+              replyingToId={replyingToId}
+              onDelete={handleDelete}
+              editingId={editingId}
+              setEditingId={setEditingId}
+              isAuthenticated={isAuthenticated}
+            />
+          </>
         )}
       </div>
     </div>

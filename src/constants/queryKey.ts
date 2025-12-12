@@ -34,4 +34,10 @@ export const QUERY_KEYS = {
     add: (productId: string) => ['watch-list', 'add', productId] as const,
     remove: (productId: string) => ['watch-list', 'remove', productId] as const,
   },
+  questions: {
+    list: (productId: string) => ['questions', 'list', productId] as const,
+    create: (productId: string) => ['questions', 'create', productId] as const,
+    update: (questionId: string) => ['questions', 'update', questionId] as const,
+    delete: (questionId: string) => ['questions', 'delete', questionId] as const,
+  },
 } as const

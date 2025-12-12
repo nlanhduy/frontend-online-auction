@@ -2,6 +2,7 @@
 import { toast } from 'sonner'
 
 import { QUERY_KEYS } from '@/constants/queryKey'
+import { handleApiError } from '@/lib/utils'
 import { ProductAPI } from '@/services/api/product.api'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
@@ -21,8 +22,7 @@ export const useAddToWatchList = () => {
       })
     },
     onError: (error: any) => {
-      const message = error?.response?.data?.message || 'Failed to add to watch list'
-      toast.error(message)
+      handleApiError(error, 'Failed to add to watch list')
     },
   })
 }
@@ -43,7 +43,7 @@ export const useRemoveFromWatchList = () => {
       })
     },
     onError: (error: any) => {
-      toast.error(error?.message || 'Failed to remove from watch list')
+      handleApiError(error, 'Failed to remove from watch list')
     },
   })
 }

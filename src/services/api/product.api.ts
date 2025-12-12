@@ -65,4 +65,49 @@ export const ProductAPI = {
       ...options,
     })
   },
+
+  getAuthProductQuestions({ options, variables }: APIParams): ApiResponse {
+    return request({
+      method: 'get',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/questions/auth/product/${variables.productId}`,
+      ...options,
+    })
+  },
+
+  getPublicProductQuestions({ options, variables }: APIParams): ApiResponse {
+    return request({
+      method: 'get',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/questions/public/product/${variables.productId}`,
+      ...options,
+    })
+  },
+
+  createProductQuestions({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'post',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/questions`,
+      ...options,
+    })
+  },
+
+  updateProductQuestions({ options, variables }: APIParams): ApiResponse {
+    return request({
+      method: 'patch',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/questions/${variables.questionId}`,
+      ...options,
+    })
+  },
+
+  deleteProductQuestions({ options, variables }: APIParams): ApiResponse {
+    return request({
+      method: 'delete',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/questions/${variables.questionId}`,
+      ...options,
+    })
+  },
 }

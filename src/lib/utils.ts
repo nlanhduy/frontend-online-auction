@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ClassValue } from 'class-variance-authority/types'
-import { clsx } from 'clsx'
-import { twMerge } from 'tailwind-merge'
+import { clsx } from 'clsx';
+import dayjs from 'dayjs';
+import { toast } from 'sonner';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -62,4 +65,21 @@ export const getPageNumbers = ({
   }
 
   return pages
+}
+
+export function handleApiError(error: any, fallbackMessage = 'Something went wrong') {
+  const message =
+    error?.response?.data?.message ||
+    error?.response?.data?.error ||
+    error?.message ||
+    fallbackMessage
+
+  const finalMessage = Array.isArray(message) ? message.join(', ') : message
+
+  toast.error(finalMessage)
+  return finalMessage
+}
+
+export const formatReadableDate = (isoString: string) => {
+  return dayjs(isoString).format('DD/MM/YYYY HH:mm')
 }
