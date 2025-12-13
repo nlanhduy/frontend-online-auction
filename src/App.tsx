@@ -10,6 +10,7 @@ import CategoryPage from './pages/category/CategoryPage'
 import Homepage from './pages/homepage/Homepage'
 import ProductDetail from './pages/product/Product'
 import SearchPage from './pages/search/SearchPage'
+import { SettingsPage } from './pages/setting/SettingPage'
 import WatchListPage from './pages/watchList/WatchListPage'
 import { UserRole } from './types/auth.types'
 
@@ -87,7 +88,7 @@ function App() {
           element={
             <ProtectedRoute
               allowedRoles={[UserRole.Bidder, UserRole.Seller, UserRole.Admin]}>
-              {/* <SettingsPage /> */}
+              <SettingsPage />
             </ProtectedRoute>
           }
         />
