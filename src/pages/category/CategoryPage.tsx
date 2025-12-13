@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
 import { useDebouncedSearch } from '@/hooks/use-debounced-search'
 import { usePagination } from '@/hooks/use-pagination'
@@ -133,7 +134,10 @@ export default function CategoryPage() {
           </h1>
           <p className='text-gray-600'>
             {isLoading ? (
-              'Loading products...'
+              <Button disabled size='lg'>
+                <Spinner />
+                Loading products...
+              </Button>
             ) : (
               <>Explore {totalItems} products in this category</>
             )}
@@ -226,8 +230,10 @@ export default function CategoryPage() {
       <div className='container mx-auto'>
         {isLoading ? (
           <div className='text-center py-12'>
-            <Loader2 className='w-8 h-8 animate-spin mx-auto mb-4 text-gray-400' />
-            <p className='text-gray-500 text-lg'>Loading products...</p>
+            <Button disabled size='lg'>
+              <Spinner />
+              Loading products...
+            </Button>
           </div>
         ) : isError ? (
           <div className='text-center py-12'>

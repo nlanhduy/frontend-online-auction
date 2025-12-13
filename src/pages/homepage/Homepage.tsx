@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
 import { ProductAPI } from '@/services/api/product.api'
 import { useQuery } from '@tanstack/react-query'
@@ -12,7 +14,6 @@ import {
 import { ProductCard } from '../../components/ui/product-card'
 
 import type { Product } from '@/types/product.type'
-
 interface HomePageData {
   endingSoon: Product[]
   mostBids: Product[]
@@ -31,7 +32,10 @@ function Homepage() {
   if (isLoading) {
     return (
       <div className='container mx-auto flex items-center justify-center min-h-screen'>
-        <p className='text-lg text-gray-600'>Loading...</p>
+        <Button disabled size='lg'>
+          <Spinner />
+          Loading...
+        </Button>
       </div>
     )
   }

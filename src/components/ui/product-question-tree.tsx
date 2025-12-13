@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatReadableDate } from '@/lib/utils'
 
 import { EditableContent } from './editable-content'
+import { Spinner } from './spinner'
 import { Textarea } from './textarea'
 import { UserCard } from './user-card'
 
@@ -26,88 +27,73 @@ interface ProductQuestion {
   isDeleted?: boolean
 }
 
-interface ProductQuestionTreeProps {
-  questions: ProductQuestion[]
-  onUpdateContent: (id: string, newContent: string) => void
-  onAddReply: (parentId: string) => void
-  onSaveReply: (parentId: string, content: string) => void
-  onCancelReply: () => void
+export interface QuestionActions {
+  updateContent: (id: string, content: string) => void
+  addReply: (parentId: string) => void
+  saveReply: (parentId: string, content: string) => void
+  cancelReply: () => void
+  delete: (id: string) => void
+}
+
+export interface QuestionUIState {
   replyingToId: string | null
-  onDelete: (id: string) => void
   editingId: string | null
   setEditingId: (id: string | null) => void
   isAuthenticated: boolean
 }
 
+export interface QuestionMutationState {
+  isSavingEditedContent: boolean
+  deletingId: string | null
+  isReplying: boolean | null
+}
+
+// ===== ProductQuestionTree Props =====
+interface ProductQuestionTreeProps {
+  questions: ProductQuestion[]
+  actions: QuestionActions
+  ui: QuestionUIState
+  mutation: QuestionMutationState
+}
+
 export function ProductQuestionTree({
   questions,
-  onUpdateContent,
-  onAddReply,
-  onSaveReply,
-  onCancelReply,
-  replyingToId,
-  onDelete,
-  editingId,
-  setEditingId,
-  isAuthenticated,
+  actions,
+  ui,
+  mutation,
 }: ProductQuestionTreeProps) {
   return (
     <div className='space-y-4'>
       {questions.map(q => (
-        <QuestionNode
-          key={q.id}
-          node={q}
-          onUpdateContent={onUpdateContent}
-          onReply={onAddReply}
-          onSaveReply={onSaveReply}
-          onCancelReply={onCancelReply}
-          editingId={editingId}
-          setEditingId={setEditingId}
-          replyingToId={replyingToId}
-          onDelete={onDelete}
-          isAuthenticated={isAuthenticated}
-        />
+        <QuestionNode key={q.id} node={q} actions={actions} ui={ui} mutation={mutation} />
       ))}
     </div>
   )
 }
 
-export function QuestionNode({
-  node,
-  onUpdateContent,
-  onReply,
-  onSaveReply,
-  onCancelReply,
-  editingId,
-  setEditingId,
-  replyingToId,
-  onDelete,
-  isAuthenticated,
-}: {
+// ===== QuestionNode Props =====
+interface QuestionNodeProps {
   node: ProductQuestion
-  onUpdateContent: (id: string, newContent: string) => void
-  onReply: (parentId: string) => void
-  onSaveReply: (parentId: string, content: string) => void
-  onCancelReply: () => void
-  editingId: string | null
-  setEditingId: (id: string | null) => void
-  replyingToId: string | null
-  onDelete: (id: string) => void
-  isAuthenticated: boolean
-}) {
+  actions: QuestionActions
+  ui: QuestionUIState
+  mutation: QuestionMutationState
+}
+
+export function QuestionNode({ node, actions, ui, mutation }: QuestionNodeProps) {
   const [replyContent, setReplyContent] = useState('')
-  const isReplyingToThisNode = replyingToId === node.id
+  const isReplyingToThisNode = ui.replyingToId === node.id
+  const isDeleting = node.id === mutation.deletingId
 
   const handleSaveReply = () => {
     if (replyContent.trim()) {
-      onSaveReply(node.id, replyContent)
+      actions.saveReply(node.id, replyContent)
       setReplyContent('')
     }
   }
 
   const handleCancelReply = () => {
     setReplyContent('')
-    onCancelReply()
+    actions.cancelReply()
   }
 
   return (
@@ -121,7 +107,7 @@ export function QuestionNode({
               : ''
         }`}>
         <CardContent className='p-0 space-y-3'>
-          <UserCard user={node.user} />
+          <UserCard user={node.user} isOwner />
 
           <div className='flex gap-4 text-xs text-muted-foreground'>
             <span>Created: {formatReadableDate(node.createdAt)}</span>
@@ -138,16 +124,20 @@ export function QuestionNode({
             <EditableContent
               id={node.id}
               content={node.content}
-              onSave={onUpdateContent}
+              onSave={actions.updateContent}
               isNewReply={node.isNew}
-              isEditing={editingId === node.id}
-              onEditClick={() => setEditingId(node.id)}
+              isEditing={ui.editingId === node.id}
+              onEditClick={() => ui.setEditingId(node.id)}
+              isSavingEditedContent={mutation.isSavingEditedContent}
             />
           )}
 
-          {!node.isDeleted && isAuthenticated && (
+          {!node.isDeleted && ui.isAuthenticated && (
             <div className='flex gap-2 pt-2'>
-              <Button size='sm' variant='default' onClick={() => onReply(node.id)}>
+              <Button
+                size='sm'
+                variant='default'
+                onClick={() => actions.addReply(node.id)}>
                 {isReplyingToThisNode ? 'Close' : 'Reply'}
               </Button>
               {node.isEditable && (
@@ -155,21 +145,23 @@ export function QuestionNode({
                   <Button
                     size='sm'
                     variant='outline'
-                    onClick={() => setEditingId(node.id)}>
+                    onClick={() => ui.setEditingId(node.id)}>
                     Edit
                   </Button>
                   <Button
                     size='sm'
                     variant='destructive'
-                    onClick={() => onDelete(node.id)}>
-                    Delete
+                    disabled={isDeleting}
+                    onClick={() => actions.delete(node.id)}>
+                    {isDeleting && <Spinner />}
+                    {isDeleting ? 'Deleting ... ' : 'Delete'}
                   </Button>
                 </>
               )}
             </div>
           )}
 
-          {isReplyingToThisNode && isAuthenticated && !node.isDeleted && (
+          {isReplyingToThisNode && ui.isAuthenticated && !node.isDeleted && (
             <div className='mt-4 pt-4 border-t space-y-2 bg-muted/50 p-3 rounded'>
               <textarea
                 value={replyContent}
@@ -179,8 +171,13 @@ export function QuestionNode({
                 autoFocus
               />
               <div className='flex gap-2'>
-                <Button size='sm' onClick={handleSaveReply} variant='default'>
-                  Save Reply
+                <Button
+                  size='sm'
+                  onClick={handleSaveReply}
+                  variant='default'
+                  disabled={mutation.isReplying || false}>
+                  {mutation.isReplying && <Spinner />}
+                  {mutation.isReplying ? 'Saving reply' : 'Save Reply'}
                 </Button>
                 <Button size='sm' onClick={handleCancelReply} variant='outline'>
                   Cancel
@@ -197,15 +194,9 @@ export function QuestionNode({
             <QuestionNode
               key={child.id}
               node={child}
-              onUpdateContent={onUpdateContent}
-              onReply={onReply}
-              onSaveReply={onSaveReply}
-              onCancelReply={onCancelReply}
-              editingId={editingId}
-              setEditingId={setEditingId}
-              replyingToId={replyingToId}
-              onDelete={onDelete}
-              isAuthenticated={isAuthenticated}
+              actions={actions}
+              ui={ui}
+              mutation={mutation}
             />
           ))}
         </div>
@@ -214,20 +205,32 @@ export function QuestionNode({
   )
 }
 
+// ===== CreateQuestionNode Props =====
 interface CreateQuestionNodeProps {
   user: User | null | undefined
   onCreateQuestion: (content: string) => void
+  isCreating: boolean
+  isSuccessful: boolean
 }
 
-export function CreateQuestionNode({ user, onCreateQuestion }: CreateQuestionNodeProps) {
+export function CreateQuestionNode({
+  user,
+  onCreateQuestion,
+  isCreating,
+  isSuccessful,
+}: CreateQuestionNodeProps) {
   const [content, setContent] = useState('')
   const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    if (isSuccessful) {
+      handleCancel()
+    }
+  }, [isSuccessful])
 
   const handleCreate = () => {
     if (!content.trim()) return
     onCreateQuestion(content.trim())
-    setContent('')
-    setIsOpen(false)
   }
 
   const handleCancel = () => {
@@ -254,8 +257,13 @@ export function CreateQuestionNode({ user, onCreateQuestion }: CreateQuestionNod
               autoFocus
             />
             <div className='flex gap-2 pt-2'>
-              <Button size='sm' variant='default' onClick={handleCreate}>
-                Create Question
+              <Button
+                size='sm'
+                variant='default'
+                onClick={handleCreate}
+                disabled={isCreating}>
+                {isCreating && <Spinner />}
+                {isCreating ? 'Creating Question ...' : 'Create Question'}
               </Button>
               <Button size='sm' variant='outline' onClick={handleCancel}>
                 Cancel

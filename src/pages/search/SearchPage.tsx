@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
 import { CATEGORIES } from '@/data/mock-data'
 import { useDebouncedSearch } from '@/hooks/use-debounced-search'
@@ -222,7 +223,12 @@ export default function SearchPage() {
       <div className='container mx-auto pt-10'>
         {isLoading ? (
           <div className='text-center py-12'>
-            <p className='text-gray-500 text-lg'>Loading products...</p>
+            <p className='text-gray-500 text-lg'>
+              <Button disabled size='lg'>
+                <Spinner />
+                Loading pructs...
+              </Button>
+            </p>
           </div>
         ) : isError ? (
           <div className='text-center py-12'>

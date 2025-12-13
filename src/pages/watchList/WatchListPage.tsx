@@ -14,6 +14,7 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination'
 import { ProductCard } from '@/components/ui/product-card'
+import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
 import { usePagination } from '@/hooks/use-pagination'
 import { useRemoveFromWatchList } from '@/hooks/use-watchlist'
@@ -63,7 +64,10 @@ export default function WatchListPage() {
           </div>
           <p className='text-gray-600'>
             {isLoading ? (
-              'Loading your watch list...'
+              <Button disabled size='lg'>
+                <Spinner />
+                Loading watchlist...
+              </Button>
             ) : (
               <>
                 You have {totalItems} product{totalItems !== 1 ? 's' : ''} in your watch
@@ -79,7 +83,12 @@ export default function WatchListPage() {
         {isLoading ? (
           <div className='text-center py-12'>
             <Loader2 className='w-8 h-8 animate-spin mx-auto mb-4 text-gray-400' />
-            <p className='text-gray-500 text-lg'>Loading your watch list...</p>
+            <p className='text-gray-500 text-lg'>
+              <Button disabled size='lg'>
+                <Spinner />
+                Loading watchlist...
+              </Button>
+            </p>
           </div>
         ) : isError ? (
           <div className='text-center py-12'>

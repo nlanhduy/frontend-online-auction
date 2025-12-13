@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 
+import { Spinner } from './spinner'
+
 interface EditableContentProps {
   id: string
   content: string
@@ -13,6 +15,7 @@ interface EditableContentProps {
   isEditing?: boolean
   onEditClick?: () => void
   onCancelEdit?: () => void
+  isSavingEditedContent: boolean
 }
 
 export function EditableContent({
@@ -22,6 +25,7 @@ export function EditableContent({
   isNewReply = false,
   isEditing = false,
   onCancelEdit,
+  isSavingEditedContent,
 }: EditableContentProps) {
   const [editedContent, setEditedContent] = useState(content)
 
@@ -53,8 +57,13 @@ export function EditableContent({
         />
 
         <div className='flex gap-2'>
-          <Button size='sm' onClick={handleSave} variant='default'>
-            Save
+          <Button
+            size='sm'
+            onClick={handleSave}
+            disabled={isSavingEditedContent}
+            variant='default'>
+            {isSavingEditedContent && <Spinner />}
+            {isSavingEditedContent ? 'Saving ...' : 'Save'}
           </Button>
           <Button size='sm' onClick={handleCancel} variant='outline'>
             Cancel

@@ -4,16 +4,24 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import { Button } from '@/components/ui/button'
 import {
   CreateQuestionNode,
   ProductQuestionTree,
 } from '@/components/ui/product-question-tree'
+import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
 import { useAuth } from '@/hooks/use-auth'
 import { useAddToWatchList, useRemoveFromWatchList } from '@/hooks/use-watchlist'
 import { formatPrice, getTimeRemaining, handleApiError } from '@/lib/utils'
 import { ProductAPI } from '@/services/api/product.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
+import type {
+  QuestionActions,
+  QuestionMutationState,
+  QuestionUIState,
+} from '@/components/ui/product-question-tree'
 
 import type { Product } from '@/types/product.type'
 export default function ProductDetail() {
@@ -22,6 +30,7 @@ export default function ProductDetail() {
   const [bidAmount, setBidAmount] = useState(0)
   const [replyingToId, setReplyingToId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const { isAuthenticated, user } = useAuth()
   const queryClient = useQueryClient()
@@ -189,7 +198,15 @@ export default function ProductDetail() {
 
   const handleDelete = (id: string) => {
     if (!id) return
-    deleteQuestionMutation.mutate({ questionId: id })
+    setDeletingId(id)
+    deleteQuestionMutation.mutate(
+      { questionId: id },
+      {
+        onSuccess: () => {
+          setDeletingId(null)
+        },
+      },
+    )
   }
 
   const handleSaveReply = (parentId: string, content: string) => {
@@ -204,6 +221,27 @@ export default function ProductDetail() {
 
   const handleCancelReply = () => {
     setReplyingToId(null)
+  }
+
+  const questionActions: QuestionActions = {
+    updateContent: handleUpdateContent,
+    addReply: handleAddReply,
+    saveReply: handleSaveReply,
+    cancelReply: handleCancelReply,
+    delete: handleDelete,
+  }
+
+  const questionUI: QuestionUIState = {
+    replyingToId,
+    editingId,
+    setEditingId,
+    isAuthenticated,
+  }
+
+  const questionMutation: QuestionMutationState = {
+    isSavingEditedContent: updateQuestionMutation.isPending,
+    deletingId,
+    isReplying: createQuestionMutation.isPending,
   }
 
   const isExistedInWatchList = checkExistedItemQuery?.data?.isFavorite
@@ -391,32 +429,30 @@ export default function ProductDetail() {
       <div className='mt-8 bg-white rounded-lg p-6'>
         <h2 className='text-2xl font-bold mb-4'>Product Q&A</h2>
         {productQuestionsQuery.isLoading ? (
-          <p className='text-gray-500'>Loading questions...</p>
+          <p className='text-gray-500'>
+            <Button disabled size='lg'>
+              <Spinner />
+              Loading questions...
+            </Button>
+          </p>
         ) : productQuestionsQuery.isError ? (
           <p className='text-red-500'>Error loading questions</p>
         ) : (
           <>
-            {(createQuestionMutation.isPending || updateQuestionMutation.isPending) && (
-              <div className='mb-4 p-3 bg-blue-50 text-blue-700 rounded-lg text-sm'>
-                Saving changes...
-              </div>
-            )}
-
             {isAuthenticated && (
-              <CreateQuestionNode user={user} onCreateQuestion={handleCreateQuestion} />
+              <CreateQuestionNode
+                user={user}
+                onCreateQuestion={handleCreateQuestion}
+                isCreating={createQuestionMutation.isPending}
+                isSuccessful={createQuestionMutation.isSuccess}
+              />
             )}
 
             <ProductQuestionTree
               questions={productQuestionsQuery.data || []}
-              onUpdateContent={handleUpdateContent}
-              onAddReply={handleAddReply}
-              onSaveReply={handleSaveReply}
-              onCancelReply={handleCancelReply}
-              replyingToId={replyingToId}
-              onDelete={handleDelete}
-              editingId={editingId}
-              setEditingId={setEditingId}
-              isAuthenticated={isAuthenticated}
+              actions={questionActions}
+              ui={questionUI}
+              mutation={questionMutation}
             />
           </>
         )}
