@@ -1,11 +1,13 @@
-import { Loader2 } from 'lucide-react'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { CalendarIcon, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import ReCAPTCHA from 'react-google-recaptcha'
 import { Controller, useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar'
 import {
   Card,
   CardContent,
@@ -22,49 +24,104 @@ import {
   FieldLabel,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Textarea } from '@/components/ui/textarea'
-import { useRegister } from '@/hooks/use-auth'
-import { registerSchema } from '@/lib/validation/auth'
+import { handleApiError } from '@/lib/utils'
+import { registerRequestSchema } from '@/lib/validation/auth'
+import { AuthAPI } from '@/services/api/auth.api'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation } from '@tanstack/react-query'
 
+import { Spinner } from '../ui/spinner'
 import { OTPVerificationModal } from './OTPVerificationModal'
 
-import type { RegisterFormData } from '@/lib/validation/auth'
-import type { SetStateAction } from 'react'
+import type { RegisterRequestFormData } from '@/lib/validation/auth'
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY
-export function RegisterForm() {
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null)
-  const [showOTPModal, setShowOTPModal] = useState(false)
-  const [userEmail, setUserEmail] = useState('')
 
-  console.log(RECAPTCHA_SITE_KEY)
-
-  const { mutate: register, isPending } = useRegister(email => {
-    setUserEmail(email)
-    setShowOTPModal(true)
+function formatDate(date: Date | undefined) {
+  if (!date) {
+    return ''
+  }
+  return date.toLocaleDateString('en-US', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
   })
+}
 
-  const form = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
+function isValidDate(date: Date | undefined) {
+  if (!date) {
+    return false
+  }
+  return !isNaN(date.getTime())
+}
+
+export function RegisterForm() {
+  const [showOTPModal, setShowOTPModal] = useState(false)
+  const [datePickerOpen, setDatePickerOpen] = useState(false)
+  const navigate = useNavigate()
+
+  const form = useForm<RegisterRequestFormData>({
+    resolver: zodResolver(registerRequestSchema),
     defaultValues: {
       fullName: '',
       email: '',
       password: '',
       confirmPassword: '',
       address: '',
+      dateOfBirth: '',
     },
   })
 
-  function onSubmit(data: RegisterFormData) {
-    // Validate reCAPTCHA
-    if (!recaptchaToken) {
-      toast.error('Please complete the reCAPTCHA verification')
-      return
-    }
+  const requestRegisterMutation = useMutation({
+    mutationFn: async (data: RegisterRequestFormData) => {
+      const { confirmPassword, ...payload } = data
 
-    register({
-      ...data,
-      recaptchaToken,
+      const res = await AuthAPI.requestRegister({
+        options: {
+          data: payload,
+        },
+      })
+      return res.data
+    },
+    onSuccess: () => {
+      toast.success('An OTP code has just sent to your mail.')
+      setShowOTPModal(true)
+    },
+    onError: err => {
+      handleApiError(err)
+    },
+  })
+
+  const verifyRegisterMuation = useMutation({
+    mutationFn: async ({ email, otp }: { email: string; otp: number }) => {
+      const res = await AuthAPI.verifyRegister({
+        options: {
+          data: {
+            email,
+            otp,
+          },
+        },
+      })
+      return res.data
+    },
+    onSuccess: () => {
+      toast.success('Register successfully !')
+      navigate('/login')
+    },
+    onError: err => {
+      handleApiError(err)
+    },
+  })
+
+  function onSubmit(data: RegisterRequestFormData) {
+    requestRegisterMutation.mutate(data)
+  }
+
+  function handleOTPVerify(otp: number) {
+    verifyRegisterMuation.mutate({
+      email: form.getValues('email'),
+      otp,
     })
   }
 
@@ -122,6 +179,90 @@ export function RegisterForm() {
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
+              />
+
+              {/* Date of Birth */}
+              <Controller
+                name='dateOfBirth'
+                control={form.control}
+                render={({ field, fieldState }) => {
+                  const selectedDate = field.value ? new Date(field.value) : undefined
+                  const [displayValue, setDisplayValue] = useState(
+                    formatDate(selectedDate),
+                  )
+                  const [month, setMonth] = useState<Date | undefined>(selectedDate)
+
+                  return (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor='register-dateOfBirth'>
+                        Date of Birth (Optional)
+                      </FieldLabel>
+                      <div className='relative flex gap-2'>
+                        <Input
+                          id='register-dateOfBirth'
+                          value={displayValue}
+                          placeholder='June 01, 1990'
+                          className='bg-background pr-10'
+                          onChange={e => {
+                            const inputValue = e.target.value
+                            setDisplayValue(inputValue)
+
+                            const date = new Date(inputValue)
+                            if (isValidDate(date)) {
+                              field.onChange(date.toISOString().split('T')[0])
+                              setMonth(date)
+                            }
+                          }}
+                          onKeyDown={e => {
+                            if (e.key === 'ArrowDown') {
+                              e.preventDefault()
+                              setDatePickerOpen(true)
+                            }
+                          }}
+                        />
+                        <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              type='button'
+                              variant='ghost'
+                              className='absolute top-1/2 right-2 size-6 -translate-y-1/2'>
+                              <CalendarIcon className='size-3.5' />
+                              <span className='sr-only'>Select date</span>
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className='w-auto overflow-hidden p-0'
+                            align='end'
+                            alignOffset={-8}
+                            sideOffset={10}>
+                            <Calendar
+                              mode='single'
+                              selected={selectedDate}
+                              captionLayout='dropdown'
+                              month={month}
+                              onMonthChange={setMonth}
+                              fromYear={1900}
+                              toYear={new Date().getFullYear()}
+                              onSelect={date => {
+                                if (date) {
+                                  const formattedDate = date.toISOString().split('T')[0]
+                                  field.onChange(formattedDate)
+                                  setDisplayValue(formatDate(date))
+                                  setMonth(date)
+                                }
+                                setDatePickerOpen(false)
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                      <FieldDescription>
+                        Your date of birth helps us personalize your experience
+                      </FieldDescription>
+                      {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                    </Field>
+                  )
+                }}
               />
 
               {/* Address */}
@@ -194,16 +335,24 @@ export function RegisterForm() {
               />
 
               {/* reCAPTCHA */}
-              <Field className='flex w-full'>
-                <ReCAPTCHA
-                  sitekey={RECAPTCHA_SITE_KEY}
-                  className='mx-auto'
-                  onChange={(token: SetStateAction<string | null>) =>
-                    setRecaptchaToken(token)
-                  }
-                  onExpired={() => setRecaptchaToken(null)}
-                />
-              </Field>
+              <Controller
+                name='recaptchaToken'
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field
+                    data-invalid={fieldState.invalid}
+                    className='flex w-full flex-col'>
+                    <ReCAPTCHA
+                      sitekey={RECAPTCHA_SITE_KEY}
+                      className='mx-auto'
+                      onChange={token => field.onChange(token)}
+                      onExpired={() => field.onChange('')}
+                    />
+
+                    {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  </Field>
+                )}
+              />
             </FieldGroup>
           </form>
         </CardContent>
@@ -213,11 +362,14 @@ export function RegisterForm() {
             type='submit'
             form='register-form'
             className='w-full'
-            disabled={isPending}>
-            {isPending ? (
+            disabled={
+              verifyRegisterMuation.isPending || requestRegisterMutation.isPending
+            }>
+            {verifyRegisterMuation.isPending || requestRegisterMutation.isPending ? (
               <>
-                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                Creating account...
+                <Spinner />
+                {requestRegisterMutation.isPending && 'Sending OTP ...'}
+                {verifyRegisterMuation.isPending && 'Creating account...'}
               </>
             ) : (
               'Create Account'
@@ -237,7 +389,9 @@ export function RegisterForm() {
       <OTPVerificationModal
         open={showOTPModal}
         onOpenChange={setShowOTPModal}
-        email={userEmail}
+        email={form.getValues('email')}
+        onVerify={handleOTPVerify}
+        isPending={false}
       />
     </>
   )

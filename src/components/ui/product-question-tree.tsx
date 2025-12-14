@@ -107,7 +107,7 @@ export function QuestionNode({ node, actions, ui, mutation }: QuestionNodeProps)
               : ''
         }`}>
         <CardContent className='p-0 space-y-3'>
-          <UserCard user={node.user} isOwner />
+          <UserCard user={node.user} isOwner={node.isOwner} />
 
           <div className='flex gap-4 text-xs text-muted-foreground'>
             <span>Created: {formatReadableDate(node.createdAt)}</span>

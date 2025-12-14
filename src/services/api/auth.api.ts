@@ -13,11 +13,19 @@ export const AuthAPI = {
     })
   },
 
-  register({ options }: APIParams): ApiResponse {
+  requestRegister({ options }: APIParams): ApiResponse {
     return request({
       method: 'post',
       headers: getHeaders(),
-      url: `${import.meta.env.VITE_BACKEND_URL}/auth/register`,
+      url: `${import.meta.env.VITE_BACKEND_URL}/auth/register/request`,
+      ...options,
+    })
+  },
+  verifyRegister({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'post',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/auth/register/verify`,
       ...options,
     })
   },

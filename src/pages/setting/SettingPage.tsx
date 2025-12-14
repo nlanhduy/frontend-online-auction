@@ -33,9 +33,8 @@ import {
   changePasswordSchema,
 } from '@/lib/validation/setting'
 import { AuthAPI } from '@/services/api/auth.api'
-import { ProductAPI } from '@/services/api/product.api'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type {
   ChangeEmailFormData,
@@ -121,9 +120,6 @@ export function SettingsPage() {
     },
     onSuccess: () => {
       toast.success('An OTP code has just sent to your mail. Please check')
-      queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.auth.me,
-      })
       setShowOTPModal(true)
     },
     onError: err => {

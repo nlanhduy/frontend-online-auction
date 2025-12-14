@@ -9,7 +9,7 @@ export const loginSchema = z.object({
   // .min(8, 'Password must be at least 8 characters'),
 })
 
-export const registerSchema = z
+export const registerRequestSchema = z
   .object({
     fullName: z
       .string()
@@ -34,11 +34,51 @@ export const registerSchema = z
       .min(1, 'Address is required')
       .min(10, 'Address must be at least 10 characters')
       .max(200, 'Address must not exceed 200 characters'),
+    dateOfBirth: z
+      .string()
+      .optional()
+      .refine(
+        val => {
+          if (!val) return true // optional field
+          const date = new Date(val)
+          const isValid = !isNaN(date.getTime())
+          if (!isValid) return false
+
+          // Check if date is not in the future
+          const today = new Date()
+          today.setHours(0, 0, 0, 0)
+          return date <= today
+        },
+        { message: 'Please enter a valid date (not in the future)' },
+      )
+      .refine(
+        val => {
+          if (!val) return true // optional field
+          const date = new Date(val)
+          const age =
+            (new Date().getTime() - date.getTime()) / (1000 * 60 * 60 * 24 * 365.25)
+          return age >= 13
+        },
+        { message: 'You must be at least 13 years old' },
+      ),
+    recaptchaToken: z.string().min(1, 'Please complete the reCAPTCHA verification'),
   })
   .refine(data => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ['confirmPassword'],
   })
+
+export const registerVerifySchema = z.object({
+  email: z
+    .string()
+    .min(1, 'Email is required')
+    .email('Please enter a valid email address'),
+  otp: z
+    .string()
+    .min(6, 'OTP must be 6 digits')
+    .max(6, 'OTP must be 6 digits')
+    .regex(/^\d+$/, 'OTP must contain only numbers'),
+})
 
 export const otpSchema = z.object({
   otp: z
@@ -48,6 +88,28 @@ export const otpSchema = z.object({
     .regex(/^\d+$/, 'OTP must contain only numbers'),
 })
 
+export const changeEmailRequestSchema = z.object({
+  newEmail: z
+    .string()
+    .min(1, 'Email is required')
+    .email('Please enter a valid email address'),
+})
+
+export const changeEmailVerifySchema = z.object({
+  newEmail: z
+    .string()
+    .min(1, 'Email is required')
+    .email('Please enter a valid email address'),
+  otp: z
+    .string()
+    .min(6, 'OTP must be 6 digits')
+    .max(6, 'OTP must be 6 digits')
+    .regex(/^\d+$/, 'OTP must contain only numbers'),
+})
+
 export type LoginFormData = z.infer<typeof loginSchema>
-export type RegisterFormData = z.infer<typeof registerSchema>
+export type RegisterRequestFormData = z.infer<typeof registerRequestSchema>
+export type RegisterVerifyFormData = z.infer<typeof registerVerifySchema>
 export type OTPFormData = z.infer<typeof otpSchema>
+export type ChangeEmailRequestFormData = z.infer<typeof changeEmailRequestSchema>
+export type ChangeEmailVerifyFormData = z.infer<typeof changeEmailVerifySchema>
