@@ -4,6 +4,7 @@ import { GuestRoute } from '@/components/auth/GuestRoute'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 import { Layout } from './components/layout/Layout'
+import { CategoryManager } from './pages/admin/category-management/category-manager'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import CategoryPage from './pages/category/CategoryPage'
@@ -148,7 +149,7 @@ function App() {
           path='admin/categories'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Admin]}>
-              {/* <AdminCategoriesPage /> */}
+              <CategoryManager />
             </ProtectedRoute>
           }
         />

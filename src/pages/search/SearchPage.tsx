@@ -25,10 +25,10 @@ import {
 } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
-import { CATEGORIES } from '@/data/mock-data'
 import { useDebouncedSearch } from '@/hooks/use-debounced-search'
 import { usePagination } from '@/hooks/use-pagination'
 import { getPageNumbers } from '@/lib/utils'
+import { CategoryAPI } from '@/services/api/category.api'
 import { ProductAPI } from '@/services/api/product.api'
 import {
   SEARCH_TYPE_OPTIONS,
@@ -99,21 +99,33 @@ export default function SearchPage() {
 
   const allProducts = data?.data?.products || []
 
-  // Use client-side pagination
-  const {
-    items: products,
-    currentPage,
-    totalPages,
-    totalItems,
-    hasPrevious,
-    hasNext,
-    goToPage,
-    nextPage,
-    previousPage,
-  } = usePagination(allProducts, {
-    pageSize: 8,
-    initialPage: 1,
+  const { currentPage, pageSize, goToPage, nextPage, previousPage, getPaginationInfo } =
+    usePagination({
+      initialPage: 1,
+      initialPageSize: 5,
+      scrollToTop: true,
+    })
+
+  const serverPaginationData = data?.data
+    ? {
+        items: allProducts,
+        total: data?.data.total,
+        page: currentPage,
+        limit: pageSize,
+        totalPages: data.data.totalPages,
+        hasNext: data.data.hasNext,
+        hasPrevious: data.data.hasPrevious,
+      }
+    : null
+
+  const { data: categoryData } = useQuery({
+    queryKey: QUERY_KEYS.categories.all,
+    queryFn: () => CategoryAPI.getAllCategories({}),
+    staleTime: Infinity,
   })
+
+  const paginationInfo = getPaginationInfo(serverPaginationData)
+  const { totalPages } = paginationInfo
 
   const handleSearch = (query: string) => {
     setFilters({ searchQuery: query })
@@ -187,11 +199,26 @@ export default function SearchPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value='all'>All Categories</SelectItem>
-                  {CATEGORIES.map(cat => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
+                  {categoryData?.data
+                    .filter((category: any) => category.children?.length > 0)
+                    .map((category: any) => (
+                      <div key={category.id}>
+                        <SelectItem
+                          value={category.id}
+                          className='font-semibold text-gray-900'>
+                          {category.name}
+                        </SelectItem>
+
+                        {category.children.map((child: any) => (
+                          <SelectItem
+                            key={child.id}
+                            value={child.id}
+                            className='pl-6 text-gray-600'>
+                            └ {child.name}
+                          </SelectItem>
+                        ))}
+                      </div>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -237,10 +264,10 @@ export default function SearchPage() {
             </p>
             <Button onClick={() => window.location.reload()}>Retry</Button>
           </div>
-        ) : products.length > 0 ? (
+        ) : allProducts.length > 0 ? (
           <>
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
-              {products.map((product: any) => (
+              {allProducts.map((product: any) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
@@ -254,7 +281,7 @@ export default function SearchPage() {
                       <PaginationPrevious
                         onClick={previousPage}
                         className={
-                          !hasPrevious
+                          !serverPaginationData?.hasPrevious
                             ? 'pointer-events-none opacity-50'
                             : 'cursor-pointer'
                         }
@@ -283,7 +310,9 @@ export default function SearchPage() {
                       <PaginationNext
                         onClick={nextPage}
                         className={
-                          !hasNext ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+                          !serverPaginationData?.hasNext
+                            ? 'pointer-events-none opacity-50'
+                            : 'cursor-pointer'
                         }
                       />
                     </PaginationItem>
@@ -294,8 +323,8 @@ export default function SearchPage() {
 
             {/* Page info */}
             <div className='text-center text-sm text-gray-600 mt-4'>
-              Page {currentPage} of {totalPages} ({products.length} of {totalItems}{' '}
-              products)
+              Page {currentPage} of {totalPages} ({allProducts.length} of{' '}
+              {serverPaginationData?.total} products)
             </div>
           </>
         ) : (

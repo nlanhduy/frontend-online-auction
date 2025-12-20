@@ -1,4 +1,5 @@
 import axios from 'axios'
+import Cookies from 'js-cookie'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useAuthStore } from '@/store/authStore'
@@ -14,12 +15,12 @@ export interface APIParams {
 
 export const axiosInstance = axios.create({
   timeout: 30000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 })
 
-// Request interceptor
 axiosInstance.interceptors.request.use(
   config => {
     const token = useAuthStore.getState().accessToken
@@ -28,48 +29,38 @@ axiosInstance.interceptors.request.use(
     }
     return config
   },
-  error => {
-    return Promise.reject(error)
-  },
+  error => Promise.reject(error),
 )
 
-// Response interceptor
 axiosInstance.interceptors.response.use(
   response => response,
   async error => {
     const originalRequest = error.config
 
-    // Handle token refresh
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
 
       try {
-        // TODO: read refresh token from cookies
-        const refreshToken = localStorage.getItem('refreshToken')
-
+        const refreshToken = Cookies.get('refresh_token')
         if (!refreshToken) {
           throw new Error('No refresh token available')
         }
 
         const response = await axios.post(
           `${import.meta.env.VITE_IAM_SERVICE}/auth/refresh`,
-          { refreshToken },
+          { withCredentials: true },
         )
 
         const { accessToken, user } = response.data
 
-        // Cập nhật token mới vào Zustand store
         useAuthStore.getState().setAuth(user, accessToken)
 
-        // Retry request với token mới
         originalRequest.headers.Authorization = `Bearer ${accessToken}`
         return axiosInstance(originalRequest)
-      } catch (refreshError) {
-        // Clear auth state and redirect to login
+      } catch (err) {
         useAuthStore.getState().clearAuth()
-        localStorage.removeItem('refreshToken')
-        // window.location.href = '/login'
-        return Promise.reject(refreshError)
+        Cookies.remove('refreshToken')
+        return Promise.reject(err)
       }
     }
 
@@ -77,15 +68,11 @@ axiosInstance.interceptors.response.use(
   },
 )
 
-// Helper function to get headers
-export const getHeaders = (customHeaders?: Record<string, string>) => {
-  return {
-    'Content-Type': 'application/json',
-    ...customHeaders,
-  }
-}
+export const getHeaders = (customHeaders?: Record<string, string>) => ({
+  'Content-Type': 'application/json',
+  ...customHeaders,
+})
 
-// Generic request function
 export const request = <T = any>(config: AxiosRequestConfig): ApiResponse<T> => {
   return axiosInstance(config)
 }

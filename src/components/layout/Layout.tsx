@@ -1,4 +1,5 @@
 import {
+  ChartBarStacked,
   FileText,
   Gavel,
   LayoutDashboard,
@@ -121,6 +122,10 @@ export function Layout() {
               <LayoutDashboard className='mr-2 h-4 w-4' />
               Dashboard
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/admin/categories')}>
+              <ChartBarStacked className='mr-2 h-4 w-4' />
+              Manage Categories
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate('/admin/users')}>
               <User className='mr-2 h-4 w-4' />
               Manage Users
@@ -183,15 +188,15 @@ export function Layout() {
                 <DropdownMenuTrigger asChild>
                   <Button variant='ghost' className='relative h-10 w-10 rounded-full'>
                     <Avatar>
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                      <AvatarImage src={user.avatar} alt={user.fullName} />
+                      <AvatarFallback>{getInitials(user.fullName)}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className='w-56' align='end'>
                   <DropdownMenuLabel>
                     <div className='flex flex-col space-y-1'>
-                      <p className='text-sm font-medium leading-none'>{user.name}</p>
+                      <p className='text-sm font-medium leading-none'>{user.fullName}</p>
                       <p className='text-xs leading-none text-muted-foreground'>
                         {user.email}
                       </p>
@@ -215,7 +220,6 @@ export function Layout() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              /* Guest Auth Buttons */
               <>
                 <Link to='/login'>
                   <Button variant='ghost'>Login</Button>

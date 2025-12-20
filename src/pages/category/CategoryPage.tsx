@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import { Filter, Loader2, Search } from 'lucide-react'
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
@@ -43,11 +43,6 @@ export default function CategoryPage() {
   const { categoryId } = useParams<{ categoryId: string }>()
   const { searchQuery, searchType, sortBy, setFilters } = useFilterStore()
 
-  // Set category from URL params
-  useEffect(() => {
-    setFilters({ selectedCategory: categoryId || null, searchQuery: 'iphone' })
-  }, [categoryId, setFilters])
-
   const debouncedQuery = useDebouncedSearch(searchQuery, 500)
 
   // Build API params
@@ -83,21 +78,27 @@ export default function CategoryPage() {
 
   const allProducts = data?.data?.products || []
 
-  // Use client-side pagination
-  const {
-    items: products,
-    currentPage,
-    totalPages,
-    totalItems,
-    hasPrevious,
-    hasNext,
-    goToPage,
-    nextPage,
-    previousPage,
-  } = usePagination(allProducts, {
-    pageSize: 8,
-    initialPage: 1,
-  })
+  const { currentPage, pageSize, goToPage, nextPage, previousPage, getPaginationInfo } =
+    usePagination({
+      initialPage: 1,
+      initialPageSize: 5,
+      scrollToTop: true,
+    })
+
+  const serverPaginationData = data?.data
+    ? {
+        items: allProducts,
+        total: data?.data.total,
+        page: currentPage,
+        limit: pageSize,
+        totalPages: data.data.totalPages,
+        hasNext: data.data.hasNext,
+        hasPrevious: data.data.hasPrevious,
+      }
+    : null
+
+  const paginationInfo = getPaginationInfo(serverPaginationData)
+  const { totalPages } = paginationInfo
 
   const handleSearch = (query: string) => {
     setFilters({ searchQuery: query })
@@ -139,7 +140,7 @@ export default function CategoryPage() {
                 Loading products...
               </Button>
             ) : (
-              <>Explore {totalItems} products in this category</>
+              <>Explore {serverPaginationData?.total} products in this category</>
             )}
           </p>
         </div>
@@ -242,7 +243,7 @@ export default function CategoryPage() {
             </p>
             <Button onClick={() => window.location.reload()}>Retry</Button>
           </div>
-        ) : products.length > 0 ? (
+        ) : allProducts.length > 0 ? (
           <>
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 relative'>
               {/* Overlay when fetching */}
@@ -251,7 +252,7 @@ export default function CategoryPage() {
                   <Loader2 className='w-8 h-8 animate-spin text-gray-400' />
                 </div>
               )}
-              {products.map((product: any) => (
+              {allProducts.map((product: any) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
@@ -265,7 +266,7 @@ export default function CategoryPage() {
                       <PaginationPrevious
                         onClick={previousPage}
                         className={
-                          !hasPrevious
+                          !serverPaginationData?.hasPrevious
                             ? 'pointer-events-none opacity-50'
                             : 'cursor-pointer'
                         }
@@ -292,7 +293,9 @@ export default function CategoryPage() {
                       <PaginationNext
                         onClick={nextPage}
                         className={
-                          !hasNext ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+                          !serverPaginationData?.hasNext
+                            ? 'pointer-events-none opacity-50'
+                            : 'cursor-pointer'
                         }
                       />
                     </PaginationItem>
@@ -303,8 +306,8 @@ export default function CategoryPage() {
 
             {/* Page info */}
             <div className='text-center text-sm text-gray-600 mt-4'>
-              Page {currentPage} of {totalPages} ({products.length} of {totalItems}{' '}
-              products)
+              Page {currentPage} of {totalPages} ({allProducts.length} of{' '}
+              {serverPaginationData?.total} products)
             </div>
           </>
         ) : (
