@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
@@ -26,13 +27,14 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
 import { useAuth } from '@/hooks/use-auth'
-import { handleApiError } from '@/lib/utils'
+import { formatReadableDate, handleApiError } from '@/lib/utils'
 import {
   changeEmailSchema,
   changeFullNameSchema,
   changePasswordSchema,
 } from '@/lib/validation/setting'
 import { AuthAPI } from '@/services/api/auth.api'
+import { RequestToSellerStatus, UserRole } from '@/types/auth.types'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -45,7 +47,7 @@ export function SettingsPage() {
   const [showOTPModal, setShowOTPModal] = useState(false)
   const [pendingEmail, setPendingEmail] = useState('')
 
-  const { isAuthenticated } = useAuth()
+  const { user, isAuthenticated } = useAuth()
   const queryClient = useQueryClient()
 
   const userDataQuery = useQuery({
@@ -85,6 +87,18 @@ export function SettingsPage() {
     },
   })
 
+  const requestSellerStatusQuery = useQuery({
+    queryKey: QUERY_KEYS.requestToSellers.detail(userInformation?.id || ''),
+    queryFn: async () => {
+      const response = await AuthAPI.getRequestSellerStatus({})
+      return response.data
+    },
+    enabled: !!isAuthenticated,
+    staleTime: 1000 * 60 * 5,
+  })
+  const requestToSeller = requestSellerStatusQuery.data
+  console.log({ requestToSeller })
+
   const changeNameMutation = useMutation({
     mutationFn: async ({ fullName }: { fullName: string }) => {
       const response = await AuthAPI.changeName({
@@ -121,6 +135,22 @@ export function SettingsPage() {
     onSuccess: () => {
       toast.success('An OTP code has just sent to your mail. Please check')
       setShowOTPModal(true)
+    },
+    onError: err => {
+      handleApiError(err)
+    },
+  })
+
+  const requestToSellerMutation = useMutation({
+    mutationFn: async () => {
+      const response = await AuthAPI.requestToSeller({})
+      return response.data
+    },
+    onSuccess: () => {
+      toast.success('A request have just been sent to admin')
+      queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.requestToSellers.detail(userInformation?.id || ''),
+      })
     },
     onError: err => {
       handleApiError(err)
@@ -196,6 +226,10 @@ export function SettingsPage() {
     })
   }
 
+  function onRequestToSeller() {
+    requestToSellerMutation.mutate()
+  }
+
   function handleOTPVerify(otp: number) {
     verifyChangeMailMutation.mutate(
       {
@@ -209,6 +243,21 @@ export function SettingsPage() {
       },
     )
   }
+
+  const latestRequest = requestToSeller?.[0]
+  const isPending = latestRequest?.status === RequestToSellerStatus.Pending
+  const isApproved = latestRequest?.status === RequestToSellerStatus.Approved
+
+  const disableRequestButton =
+    requestToSellerMutation.isPending || isPending || isApproved
+
+  const buttonText = requestToSellerMutation.isPending
+    ? 'Requesting...'
+    : isPending
+      ? 'Request already submitted, please wait'
+      : isApproved
+        ? 'You are already a seller'
+        : 'Request to be a seller for 7 days'
 
   return (
     <div className='min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8'>
@@ -395,6 +444,7 @@ export function SettingsPage() {
                   )}
                 />
               </FieldGroup>
+
               <Button
                 type='submit'
                 className='mt-4'
@@ -411,6 +461,46 @@ export function SettingsPage() {
             </form>
           </CardContent>
         </Card>
+
+        {!requestSellerStatusQuery.isPending && (
+          <div className='w-full space-y-2'>
+            <Button
+              className='w-full'
+              onClick={onRequestToSeller}
+              disabled={disableRequestButton}>
+              {requestToSellerMutation.isPending && <Spinner />}
+              {buttonText}
+            </Button>
+
+            {/* ===== REQUEST HISTORY ===== */}
+            {requestToSeller && requestToSeller.length > 0 && (
+              <div className='rounded-md border mt-2 border-muted bg-muted/50 p-3 space-y-2'>
+                <p className='text-sm font-medium'>Request History</p>
+
+                {requestToSeller.map((req: any) => (
+                  <div
+                    key={req.id}
+                    className='flex items-center justify-between text-sm mt-4'>
+                    <span className='text-muted-foreground'>
+                      {formatReadableDate(req.createdAt)}
+                    </span>
+
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        req.status === RequestToSellerStatus.Pending
+                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                          : req.status === RequestToSellerStatus.Approved
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                      }`}>
+                      {req.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* OTP Verification Modal */}

@@ -391,7 +391,7 @@ export function RegisterForm() {
         onOpenChange={setShowOTPModal}
         email={form.getValues('email')}
         onVerify={handleOTPVerify}
-        isPending={false}
+        isPending={verifyRegisterMuation.isPending}
       />
     </>
   )

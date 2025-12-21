@@ -37,3 +37,13 @@ export interface AuthState {
   user: User | null
   isAuthenticated: boolean
 }
+
+export const RequestToSellerStatus = {
+  Pending: 'PENDING',
+  Approved: 'APPROVED',
+  Rejected: 'REJECTED',
+  Expired: 'EXPIRED',
+} as const
+
+export type RequestToSellerStatus =
+  (typeof RequestToSellerStatus)[keyof typeof RequestToSellerStatus]

@@ -107,9 +107,45 @@ export const changeEmailVerifySchema = z.object({
     .regex(/^\d+$/, 'OTP must contain only numbers'),
 })
 
+export const requestForgetPasswordSchema = z.object({
+  email: z
+    .string()
+    .min(1, 'Email is required')
+    .email('Please enter a valid email address'),
+})
+
+export const verifyForgetPassword = z
+  .object({
+    email: z
+      .string()
+      .min(1, 'Email is required')
+      .email('Please enter a valid email address'),
+    otp: z
+      .string()
+      .min(6, 'OTP must be 6 digits')
+      .max(6, 'OTP must be 6 digits')
+      .regex(/^\d+$/, 'OTP must contain only numbers'),
+    newPassword: z
+      .string()
+      .min(1, 'New password is required')
+      .min(8, 'Password must be at least 8 characters')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+      ),
+
+    confirmPassword: z.string().min(1, 'Please confirm your password'),
+  })
+  .refine(data => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  })
+
 export type LoginFormData = z.infer<typeof loginSchema>
 export type RegisterRequestFormData = z.infer<typeof registerRequestSchema>
 export type RegisterVerifyFormData = z.infer<typeof registerVerifySchema>
 export type OTPFormData = z.infer<typeof otpSchema>
 export type ChangeEmailRequestFormData = z.infer<typeof changeEmailRequestSchema>
 export type ChangeEmailVerifyFormData = z.infer<typeof changeEmailVerifySchema>
+export type RequestForgetPasswordFormData = z.infer<typeof requestForgetPasswordSchema>
+export type VerifyForgetPasswordFormData = z.infer<typeof verifyForgetPassword>

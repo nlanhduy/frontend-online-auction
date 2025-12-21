@@ -1,5 +1,4 @@
-import { Eye, EyeOff, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { Loader2 } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
 
@@ -20,8 +19,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import type { LoginFormData } from '@/lib/validation/auth'
 export function LoginForm() {
-  const [showPassword, setShowPassword] = useState(false)
-
   const { mutate: login, isPending } = useLogin()
 
   const form = useForm<LoginFormData>({
@@ -79,21 +76,11 @@ export function LoginForm() {
                     <Input
                       {...field}
                       id='login-password'
-                      type={showPassword ? 'text' : 'password'}
+                      type={'password'}
                       placeholder='••••••••'
                       autoComplete='current-password'
                       aria-invalid={fieldState.invalid}
                     />
-                    <button
-                      type='button'
-                      onClick={() => setShowPassword(!showPassword)}
-                      className='absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground'>
-                      {showPassword ? (
-                        <EyeOff className='h-4 w-4' />
-                      ) : (
-                        <Eye className='h-4 w-4' />
-                      )}
-                    </button>
                   </div>
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
@@ -115,6 +102,14 @@ export function LoginForm() {
           )}
         </Button>
 
+        {/* Register AND Forgot Password */}
+        <div className='flex items-center justify-between'>
+          <Link
+            to='/forgot-password'
+            className='text-sm text-muted-foreground hover:underline'>
+            Forgot password?
+          </Link>
+        </div>
         <div className='text-sm text-center text-muted-foreground'>
           Don&apos;t have an account?{' '}
           <Link to='/register' className='font-medium text-primary hover:underline'>

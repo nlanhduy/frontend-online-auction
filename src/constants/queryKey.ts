@@ -40,4 +40,10 @@ export const QUERY_KEYS = {
     update: (questionId: string) => ['questions', 'update', questionId] as const,
     delete: (questionId: string) => ['questions', 'delete', questionId] as const,
   },
+
+  requestToSellers: {
+    all: ['request-to-sellers', 'all'] as const,
+    create: ['request-to-sellers', 'create'] as const,
+    detail: (id: string) => ['request-to-sellers', id] as const,
+  },
 } as const

@@ -109,4 +109,60 @@ export const AuthAPI = {
       ...options,
     })
   },
+  requestToSeller({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'post',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/seller-upgrade/request`,
+      ...options,
+    })
+  },
+  getAllPendingSellers({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'get',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/seller-upgrade/pending`,
+      ...options,
+    })
+  },
+  getRequestSellerStatus({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'get',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/me/seller-upgrade-requests`,
+      ...options,
+    })
+  },
+  approveSeller({ options, variables }: APIParams): ApiResponse {
+    return request({
+      method: 'post',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/seller-upgrade/${variables.requestId}/approve`,
+      ...options,
+    })
+  },
+  rejectSeller({ options, variables }: APIParams): ApiResponse {
+    return request({
+      method: 'post',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/seller-upgrade/${variables.requestId}/reject`,
+      ...options,
+    })
+  },
+  requestForgetPassword({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'post',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/forgot-password/request`,
+      ...options,
+    })
+  },
+  verifyForgetPassword({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'post',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/forgot-password/verify`,
+      ...options,
+    })
+  },
 }

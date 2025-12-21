@@ -130,9 +130,9 @@ export function Layout() {
               <User className='mr-2 h-4 w-4' />
               Manage Users
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/admin/auctions')}>
+            <DropdownMenuItem onClick={() => navigate('/admin/seller-requests')}>
               <Package className='mr-2 h-4 w-4' />
-              Manage Auctions
+              Seller Requests
             </DropdownMenuItem>
           </>
         )

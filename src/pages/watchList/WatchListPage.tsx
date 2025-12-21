@@ -37,21 +37,27 @@ export default function WatchListPage() {
 
   const allProducts = data?.data.favorites || []
 
-  // Use client-side pagination
-  const {
-    items: favorites,
-    currentPage,
-    totalPages,
-    totalItems,
-    hasPrevious,
-    hasNext,
-    goToPage,
-    nextPage,
-    previousPage,
-  } = usePagination(allProducts, {
-    pageSize: 8,
-    initialPage: 1,
-  })
+  const { currentPage, pageSize, goToPage, nextPage, previousPage, getPaginationInfo } =
+    usePagination({
+      initialPage: 1,
+      initialPageSize: 8,
+      scrollToTop: true,
+    })
+
+  const serverPaginationData = data?.data
+    ? {
+        items: allProducts,
+        total: data?.data.total,
+        page: currentPage,
+        limit: pageSize,
+        totalPages: data.data.totalPages,
+        hasNext: data.data.hasNext,
+        hasPrevious: data.data.hasPrevious,
+      }
+    : null
+
+  const paginationInfo = getPaginationInfo(serverPaginationData)
+  const { totalPages } = paginationInfo
 
   return (
     <div className=''>
@@ -70,8 +76,8 @@ export default function WatchListPage() {
               </Button>
             ) : (
               <>
-                You have {totalItems} product{totalItems !== 1 ? 's' : ''} in your watch
-                list
+                You have {serverPaginationData?.total} product
+                {serverPaginationData?.total !== 1 ? 's' : ''} in your watch list
               </>
             )}
           </p>
@@ -97,10 +103,10 @@ export default function WatchListPage() {
             </p>
             <Button onClick={() => window.location.reload()}>Retry</Button>
           </div>
-        ) : favorites.length > 0 ? (
+        ) : allProducts.length > 0 ? (
           <>
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
-              {favorites.map((product: any) => {
+              {allProducts.map((product: any) => {
                 const actions: Action[] = [
                   {
                     label: 'Remove from watch list',
@@ -124,7 +130,7 @@ export default function WatchListPage() {
                       <PaginationPrevious
                         onClick={previousPage}
                         className={
-                          !hasPrevious
+                          !serverPaginationData?.hasPrevious
                             ? 'pointer-events-none opacity-50'
                             : 'cursor-pointer'
                         }
@@ -151,7 +157,9 @@ export default function WatchListPage() {
                       <PaginationNext
                         onClick={nextPage}
                         className={
-                          !hasNext ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+                          !serverPaginationData?.hasNext
+                            ? 'pointer-events-none opacity-50'
+                            : 'cursor-pointer'
                         }
                       />
                     </PaginationItem>
@@ -162,8 +170,8 @@ export default function WatchListPage() {
 
             {/* Page info */}
             <div className='text-center text-sm text-gray-600 mt-4'>
-              Page {currentPage} of {totalPages} ({favorites.length} of {totalItems}{' '}
-              products)
+              Page {currentPage} of {totalPages} ({allProducts.length} of{' '}
+              {serverPaginationData?.total} products)
             </div>
           </>
         ) : (
