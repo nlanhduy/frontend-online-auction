@@ -1,25 +1,20 @@
 'use client'
 
-import { Plus } from 'lucide-react'
-import { useCallback, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Plus } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { CategoryAccordion } from '@/components/admin/category-management/category-accordion'
-import { CategoryDialog } from '@/components/admin/category-management/category-dialog'
+import { CategoryAccordion } from '@/components/admin/category-management/category-accordion';
+import { CategoryDialog } from '@/components/admin/category-management/category-dialog';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
-import { Spinner } from '@/components/ui/spinner'
-import { useCategories } from '@/hooks/use-categories'
-import { formatReadableDate } from '@/lib/utils'
+    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+    AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
+} from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useCategories } from '@/hooks/use-categories';
+import { formatReadableDate } from '@/lib/utils';
 
 import type { Category } from '@/types/category.type'
 import type { CategoryFormData } from '@/lib/validation/category'
@@ -133,6 +128,19 @@ export function CategoryManager() {
     )
   }
 
+  const isDeleting = deleteCategoryMutation.isPending
+  const hasProducts = selectedCategory?.numsOfProducts > 0
+
+  const isDisabled = isDeleting || selectedCategory?.children?.length > 0 || hasProducts
+
+  const tooltipMessage = isDeleting
+    ? 'Deleting category...'
+    : hasChildren
+      ? 'Cannot delete this category because it has subcategories'
+      : hasProducts
+        ? 'Cannot delete this category because it contains products'
+        : ''
+
   return (
     <>
       <div className='min-h-screen bg-background'>
@@ -213,6 +221,13 @@ export function CategoryManager() {
 
                     <div>
                       <p className='text-xs uppercase text-muted-foreground'>
+                        Number of products
+                      </p>
+                      <p className='text-sm'>{selectedCategory.numsOfProducts}</p>
+                    </div>
+
+                    <div>
+                      <p className='text-xs uppercase text-muted-foreground'>
                         Created at
                       </p>
                       <p className='text-sm'>
@@ -247,13 +262,27 @@ export function CategoryManager() {
                         </Button>
                       )}
 
-                      <Button
-                        onClick={() => handleDeleteClick(selectedCategory.id)}
-                        variant='destructive'
-                        className='w-full'
-                        disabled={deleteCategoryMutation.isPending}>
-                        Delete
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className='w-full'>
+                              <Button
+                                onClick={() => handleDeleteClick(selectedCategory.id)}
+                                variant='destructive'
+                                className='w-full'
+                                disabled={isDisabled}>
+                                Delete
+                              </Button>
+                            </span>
+                          </TooltipTrigger>
+
+                          {isDisabled && (
+                            <TooltipContent side='top'>
+                              <p>{tooltipMessage}</p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </div>
                 ) : (

@@ -13,6 +13,7 @@ import CategoryPage from './pages/category/CategoryPage'
 import Homepage from './pages/homepage/Homepage'
 import ProductDetail from './pages/product/Product'
 import SearchPage from './pages/search/SearchPage'
+import CreateProductPage from './pages/seller/product/CreateProductPage'
 import { SettingsPage } from './pages/setting/SettingPage'
 import WatchListPage from './pages/watchList/WatchListPage'
 import { UserRole } from './types/auth.types'
@@ -110,7 +111,7 @@ function App() {
           path='seller/products/new'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Seller]}>
-              {/* <CreateProductPage /> */}
+              <CreateProductPage />
             </ProtectedRoute>
           }
         />

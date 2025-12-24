@@ -110,4 +110,36 @@ export const ProductAPI = {
       ...options,
     })
   },
+  getUserProducts({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'get',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/products/user`,
+      ...options,
+    })
+  },
+  createProduct({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'post',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/products`,
+      ...options,
+    })
+  },
+  updateProduct({ options, variables }: APIParams): ApiResponse {
+    return request({
+      method: 'patch',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/products/${variables.productId}`,
+      ...options,
+    })
+  },
+  deleteProduct({ options, variables }: APIParams): ApiResponse {
+    return request({
+      method: 'delete',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/products/${variables.productId}`,
+      ...options,
+    })
+  },
 }

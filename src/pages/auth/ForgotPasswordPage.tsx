@@ -81,6 +81,7 @@ function ForgotPasswordPage() {
       setShowOTPModal(false)
       navigate('/login')
     },
+
     onError: (error: any) => {
       handleApiError(error, 'Failed to reset password')
     },

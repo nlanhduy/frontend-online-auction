@@ -1,10 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { ClassValue } from 'class-variance-authority/types'
 import { clsx } from 'clsx'
 import dayjs from 'dayjs'
 import { toast } from 'sonner'
 import { twMerge } from 'tailwind-merge'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import type { ClassValue } from 'class-variance-authority/types'
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -82,4 +83,48 @@ export function handleApiError(error: any, fallbackMessage = 'Something went wro
 
 export const formatReadableDate = (isoString: string) => {
   return dayjs(isoString).format('DD/MM/YYYY HH:mm')
+}
+
+export async function uploadImageToCloudinary(file: File) {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET)
+
+  try {
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+      {
+        method: 'POST',
+        body: formData,
+      },
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      console.error('Cloudinary error:', data)
+      throw new Error(data.error?.message || 'Upload failed')
+    }
+
+    return data as {
+      secure_url: string
+      public_id: string
+      width: number
+      height: number
+    }
+  } catch (error) {
+    console.error('Upload error:', error)
+    throw error
+  }
+}
+
+export const formatNumber = (value?: number) => {
+  if (value === undefined || value === null) return ''
+  return value.toLocaleString('en-US')
+}
+
+export const parseNumber = (value: string) => {
+  const raw = value.replace(/,/g, '')
+  const num = Number(raw)
+  return isNaN(num) ? undefined : num
 }
