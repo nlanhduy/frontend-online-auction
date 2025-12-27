@@ -4,8 +4,9 @@ import { GuestRoute } from '@/components/auth/GuestRoute'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 import { Layout } from './components/layout/Layout'
-import { CategoryManager } from './pages/admin/category-management/category-manager'
-import RequestToSellerList from './pages/admin/request-to-sellers/request-to-sellers'
+import { CategoryManager } from './pages/admin/category/CategoryManagementPage'
+import ProductManageMentPage from './pages/admin/product/ProductManagementPage'
+import RequestToSellerList from './pages/admin/request-to-sellers/RequestToSellerPage'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
@@ -155,7 +156,7 @@ function App() {
           path='admin/products'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Admin]}>
-              {/* <AdminProductsPage /> */}
+              <ProductManageMentPage />
             </ProtectedRoute>
           }
         />

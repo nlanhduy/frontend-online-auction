@@ -143,15 +143,6 @@ export const ProductAPI = {
     })
   },
 
-  getMyProducts({ options }: APIParams): ApiResponse {
-    return request({
-      method: 'get',
-      headers: getHeaders(),
-      url: `${import.meta.env.VITE_BACKEND_URL}/products/my-products`,
-      ...options,
-    })
-  },
-
   updateProductStatus({ options, variables }: APIParams): ApiResponse {
     return request({
       method: 'patch',

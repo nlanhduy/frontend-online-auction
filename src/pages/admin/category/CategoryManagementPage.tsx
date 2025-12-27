@@ -1,20 +1,31 @@
 'use client'
 
-import { Plus } from 'lucide-react';
-import { useCallback, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Plus } from 'lucide-react'
+import { useCallback, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import { CategoryAccordion } from '@/components/admin/category-management/category-accordion';
-import { CategoryDialog } from '@/components/admin/category-management/category-dialog';
+import { CategoryAccordion } from '@/components/admin/category-management/category-accordion'
+import { CategoryDialog } from '@/components/admin/category-management/category-dialog'
 import {
-    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
-    AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useCategories } from '@/hooks/use-categories';
-import { formatReadableDate } from '@/lib/utils';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { Spinner } from '@/components/ui/spinner'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { useCategories } from '@/hooks/use-categories'
+import { formatReadableDate } from '@/lib/utils'
 
 import type { Category } from '@/types/category.type'
 import type { CategoryFormData } from '@/lib/validation/category'

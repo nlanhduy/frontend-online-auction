@@ -1,7 +1,7 @@
-import { BookIcon, PlusIcon, Trash } from 'lucide-react'
+import { Trash } from 'lucide-react'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import {
@@ -29,20 +29,18 @@ import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
 import { usePagination } from '@/hooks/use-pagination'
 import { getPageNumbers, handleApiError } from '@/lib/utils'
-import { AuthAPI } from '@/services/api/auth.api'
 import { ProductAPI } from '@/services/api/product.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { Action } from '@/components/ui/action-menu'
 
-function SellerProductsPage() {
+function ProductManageMentPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<{
     id: string
     name: string
   } | null>(null)
 
-  const navigate = useNavigate()
   const { currentPage, pageSize, goToPage, nextPage, previousPage, getPaginationInfo } =
     usePagination({
       initialPage: 1,
@@ -51,9 +49,9 @@ function SellerProductsPage() {
     })
   const queryClient = useQueryClient()
   const productQuery = useQuery({
-    queryKey: [QUERY_KEYS.user.myProducts, currentPage, pageSize],
+    queryKey: [QUERY_KEYS.products.all, currentPage, pageSize],
     queryFn: () =>
-      AuthAPI.getMyProducts({
+      ProductAPI.getAllProducts({
         options: {
           params: {
             page: currentPage,
@@ -70,7 +68,7 @@ function SellerProductsPage() {
     onSuccess: () => {
       toast.success('Product deleted successfully')
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.user.myProducts],
+        queryKey: [QUERY_KEYS.products.all],
         exact: false,
       })
       setDeleteDialogOpen(false)
@@ -113,13 +111,6 @@ function SellerProductsPage() {
       label: 'Delete',
       action: () => handleDeleteClick(product),
       icon: <Trash />,
-    },
-    {
-      label: 'Add description',
-      action: () => {
-        navigate(`/seller/products/${product.id}/edit`)
-      },
-      icon: <BookIcon />,
     },
   ]
 
@@ -174,15 +165,6 @@ function SellerProductsPage() {
           </div>
         ) : allProducts.length > 0 ? (
           <>
-            <div className='flex w-full mb-8'>
-              {/* Create product button */}
-              <Button
-                onClick={() => navigate('/seller/products/new')}
-                className='flex items-center ml-auto gap-2'>
-                <PlusIcon className='w-4 h-4' />
-                Create Product
-              </Button>
-            </div>
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 relative'>
               {/* Overlay when fetching */}
               {productQuery.isFetching && (
@@ -265,4 +247,4 @@ function SellerProductsPage() {
   )
 }
 
-export default SellerProductsPage
+export default ProductManageMentPage

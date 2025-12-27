@@ -168,7 +168,7 @@ export const AuthAPI = {
 
   getMyProducts({ options }: APIParams): ApiResponse {
     return request({
-      method: 'post',
+      method: 'get',
       headers: getHeaders(),
       url: `${import.meta.env.VITE_BACKEND_URL}/users/me/products`,
       ...options,

@@ -23,6 +23,7 @@ export const QUERY_KEYS = {
     homepage: ['products', 'homepage'] as const,
     search: (params: SearchProductsParams) => ['products', 'search', params] as const,
     detail: (productId: string) => ['products', 'detail', productId] as const,
+    all: ['products', 'all'] as const,
   },
 
   categories: {
