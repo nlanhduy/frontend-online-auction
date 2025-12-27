@@ -29,7 +29,7 @@ import { productSchema } from '@/lib/validation/product'
 import { CategoryAPI } from '@/services/api/category.api'
 import { ProductAPI } from '@/services/api/product.api'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { ProductFormData } from '@/lib/validation/product'
 import type { Category } from '@/types/category.type'
@@ -60,6 +60,7 @@ export default function CreateProductPage() {
   const [isUploading, setIsUploading] = useState(false)
   const [isMainImageUploading, setIsMainImageUploading] = useState(false)
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const {
     control,
     handleSubmit,
@@ -85,6 +86,7 @@ export default function CreateProductPage() {
       ProductAPI.createProduct({ options: { data } }),
     onSuccess: () => {
       toast.success('Product created successfully!')
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.user.myProducts] })
       navigate('/seller/products')
     },
   })

@@ -78,7 +78,7 @@ function MediumProductCard({ product, actions }: ProductCardProps) {
 
       <div className='flex flex-col gap-3 flex-1 p-4'>
         <div onClick={handleCategoryClick} data-category-tag>
-          <CategoryTag name={product.category.name} size='sm' />
+          <CategoryTag name={product?.category?.name} size='sm' />
         </div>
 
         <h3 className='text-sm font-semibold line-clamp-2 hover:text-blue-600'>

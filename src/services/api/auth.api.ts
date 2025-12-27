@@ -165,4 +165,13 @@ export const AuthAPI = {
       ...options,
     })
   },
+
+  getMyProducts({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'post',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/me/products`,
+      ...options,
+    })
+  },
 }

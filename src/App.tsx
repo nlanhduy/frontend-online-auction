@@ -11,9 +11,11 @@ import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import CategoryPage from './pages/category/CategoryPage'
 import Homepage from './pages/homepage/Homepage'
-import ProductDetail from './pages/product/Product'
+import ProductDetail from './pages/product/ProductDetailPage'
 import SearchPage from './pages/search/SearchPage'
 import CreateProductPage from './pages/seller/product/CreateProductPage'
+import EditProductPage from './pages/seller/product/EditProductPage'
+import SellerProductsPage from './pages/seller/product/SellerProductsPage'
 import { SettingsPage } from './pages/setting/SettingPage'
 import WatchListPage from './pages/watchList/WatchListPage'
 import { UserRole } from './types/auth.types'
@@ -119,7 +121,7 @@ function App() {
           path='seller/products'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Seller]}>
-              {/* <SellerProductsPage /> */}
+              <SellerProductsPage />
             </ProtectedRoute>
           }
         />
@@ -127,7 +129,7 @@ function App() {
           path='seller/products/:id/edit'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Seller]}>
-              {/* <EditProductPage /> */}
+              <EditProductPage />
             </ProtectedRoute>
           }
         />

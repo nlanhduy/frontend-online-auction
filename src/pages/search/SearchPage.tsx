@@ -67,6 +67,13 @@ export default function SearchPage() {
   const { searchQuery, searchType, sortBy, selectedCategory, setFilters } =
     useFilterStore()
 
+  const { currentPage, pageSize, goToPage, nextPage, previousPage, getPaginationInfo } =
+    usePagination({
+      initialPage: 1,
+      initialPageSize: 8,
+      scrollToTop: true,
+    })
+
   useEffect(() => {
     if (q && searchQuery !== q) {
       setFilters({ searchQuery: q })
@@ -82,8 +89,10 @@ export default function SearchPage() {
       searchType: debouncedQuery.trim() ? searchType : undefined,
       sortBy: sortBy,
       categoryId: selectedCategory || undefined,
+      page: currentPage,
+      limit: pageSize,
     }),
-    [debouncedQuery, searchType, sortBy, selectedCategory],
+    [debouncedQuery, searchType, sortBy, selectedCategory, currentPage, pageSize],
   )
 
   const { data, isLoading, isError, error } = useQuery({
@@ -98,13 +107,6 @@ export default function SearchPage() {
   })
 
   const allProducts = data?.data?.products || []
-
-  const { currentPage, pageSize, goToPage, nextPage, previousPage, getPaginationInfo } =
-    usePagination({
-      initialPage: 1,
-      initialPageSize: 5,
-      scrollToTop: true,
-    })
 
   const serverPaginationData = data?.data
     ? {

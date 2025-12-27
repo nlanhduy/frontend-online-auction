@@ -7,6 +7,7 @@ import {
   Package,
   Search,
   Settings,
+  TableProperties,
   User,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -98,17 +99,13 @@ export function Layout() {
           <>
             {commonItems}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate('/my-auctions')}>
-              <Package className='mr-2 h-4 w-4' />
-              My Auctions
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/create-auction')}>
+            <DropdownMenuItem onClick={() => navigate('/watchlist')}>
               <FileText className='mr-2 h-4 w-4' />
-              Create Auction
+              Watchlist
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/sales-history')}>
-              <FileText className='mr-2 h-4 w-4' />
-              Sales History
+            <DropdownMenuItem onClick={() => navigate('/seller/products')}>
+              <TableProperties className='mr-2 h-4 w-4' />
+              Manage Products
             </DropdownMenuItem>
           </>
         )

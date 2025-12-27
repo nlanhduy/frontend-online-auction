@@ -6,6 +6,7 @@ import { twMerge } from 'tailwind-merge'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type { ClassValue } from 'class-variance-authority/types'
+import type { ProductStatus } from '@/types/product.type'
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -81,7 +82,8 @@ export function handleApiError(error: any, fallbackMessage = 'Something went wro
   return finalMessage
 }
 
-export const formatReadableDate = (isoString: string) => {
+export const formatReadableDate = (isoString?: string) => {
+  if (!isoString) return ''
   return dayjs(isoString).format('DD/MM/YYYY HH:mm')
 }
 
@@ -127,4 +129,14 @@ export const parseNumber = (value: string) => {
   const raw = value.replace(/,/g, '')
   const num = Number(raw)
   return isNaN(num) ? undefined : num
+}
+
+export const getProductStatusColor = (status: ProductStatus) => {
+  const colors: Record<ProductStatus, string> = {
+    ACTIVE: 'bg-green-100 text-green-800',
+    COMPLETED: 'bg-blue-100 text-blue-800',
+    CANCELLED: 'bg-red-100 text-red-800',
+  }
+
+  return colors[status]
 }

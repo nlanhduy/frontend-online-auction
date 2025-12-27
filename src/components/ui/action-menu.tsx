@@ -23,7 +23,10 @@ export function ActionMenu({ actions = [] }: { actions?: Action[] }) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            onClick={e => e.preventDefault()}
+            onClick={e => {
+              e.preventDefault()
+              e.stopPropagation()
+            }}
             className='p-1 rounded-full hover:bg-gray-100'>
             <MoreVertical className='w-4 h-4' />
           </button>
@@ -34,9 +37,11 @@ export function ActionMenu({ actions = [] }: { actions?: Action[] }) {
               key={index}
               onClick={e => {
                 e.preventDefault()
+                e.stopPropagation()
                 item.action()
               }}
               className='cursor-pointer'>
+              {item.icon}
               {item.label}
             </DropdownMenuItem>
           ))}

@@ -24,18 +24,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import type { Action } from '@/components/ui/action-menu'
 export default function WatchListPage() {
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: QUERY_KEYS.watchList.all,
-    queryFn: () => ProductAPI.getWatchList({}),
-    staleTime: 1000 * 60 * 5,
-  })
-
   const removeFromWatchList = useRemoveFromWatchList()
-  const handleRemoveFromWatchList = (productId: string) => {
-    removeFromWatchList.mutate(productId ?? '')
-  }
-
-  const allProducts = data?.data.favorites || []
 
   const { currentPage, pageSize, goToPage, nextPage, previousPage, getPaginationInfo } =
     usePagination({
@@ -43,6 +32,24 @@ export default function WatchListPage() {
       initialPageSize: 8,
       scrollToTop: true,
     })
+  const handleRemoveFromWatchList = (productId: string) => {
+    removeFromWatchList.mutate(productId ?? '')
+  }
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: [QUERY_KEYS.watchList.all, currentPage, pageSize],
+    queryFn: () =>
+      ProductAPI.getWatchList({
+        options: {
+          params: {
+            page: currentPage,
+            limit: pageSize,
+          },
+        },
+      }),
+    staleTime: 1000 * 60 * 5,
+  })
+
+  const allProducts = data?.data.favorites || []
 
   const serverPaginationData = data?.data
     ? {

@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
   CreateQuestionNode,
   ProductQuestionTree,
@@ -13,7 +14,14 @@ import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
 import { useAuth } from '@/hooks/use-auth'
 import { useAddToWatchList, useRemoveFromWatchList } from '@/hooks/use-watchlist'
-import { formatPrice, getTimeRemaining, handleApiError } from '@/lib/utils'
+import { renderRichText } from '@/lib/renderRichText'
+import {
+  formatPrice,
+  formatReadableDate,
+  getProductStatusColor,
+  getTimeRemaining,
+  handleApiError,
+} from '@/lib/utils'
 import { ProductAPI } from '@/services/api/product.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -34,7 +42,6 @@ export default function ProductDetail() {
 
   const { isAuthenticated, user } = useAuth()
   const queryClient = useQueryClient()
-
   const productDetailQuery = useQuery<Product>({
     queryKey: QUERY_KEYS.products.detail(productId ?? ''),
     queryFn: async () => {
@@ -247,6 +254,20 @@ export default function ProductDetail() {
   const isExistedInWatchList = checkExistedItemQuery?.data?.isFavorite
   const product = productDetailQuery.data
 
+  if (productDetailQuery.isPending)
+    return (
+      <>
+        <div className='container mx-auto py-12'>
+          <div className='text-center py-12'>
+            <Button disabled size='lg'>
+              <Spinner />
+              Loading products...
+            </Button>
+          </div>
+        </div>
+      </>
+    )
+
   if (!product) return <></>
 
   return (
@@ -278,8 +299,15 @@ export default function ProductDetail() {
         <div className='space-y-6'>
           <div className='bg-white rounded-lg p-6 space-y-4'>
             <div className='flex items-center justify-between'>
-              <div className='inline-block px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full'>
-                {product.category.name}
+              <div className='flex gap-2'>
+                <div className='inline-block px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full'>
+                  {product.category.name}
+                </div>
+
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getProductStatusColor(product.status)}`}>
+                  {product.status}
+                </span>
               </div>
 
               {isAuthenticated && (
@@ -303,15 +331,6 @@ export default function ProductDetail() {
             </div>
 
             <h1 className='text-3xl font-bold text-gray-900'>{product.name}</h1>
-
-            <span
-              className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                product.status === 'ACTIVE'
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-gray-100 text-gray-700'
-              }`}>
-              {product.status === 'ACTIVE' ? 'Auction in progress' : product.status}
-            </span>
 
             <div className='space-y-3 pt-4 border-t'>
               <div>
@@ -410,52 +429,75 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      <div className='mt-8 bg-white rounded-lg p-6'>
-        <h2 className='text-2xl font-bold mb-4'>Product description</h2>
-        <p className='text-gray-700 leading-relaxed'>{product.description}</p>
+      <div className='grid grid-cols-2 gap-8'>
+        <div className=''>
+          <h2 className='text-2xl font-bold mb-4'>Bid History</h2>
+        </div>
+        <div className=''>
+          <div className='mt-8 bg-white rounded-lg'>
+            <h2 className='text-2xl font-bold mb-4'>Product description</h2>
 
-        {product.descriptionHistory.length > 0 && (
-          <div className='mt-4 pt-4 border-t'>
-            <p className='text-sm text-gray-600 font-semibold mb-2'>Update history:</p>
-            <ul className='list-disc list-inside text-sm text-gray-600'>
-              {product.descriptionHistory.map((history, idx) => (
-                <li key={idx}>{history}</li>
-              ))}
-            </ul>
+            <div className='flex flex-col gap-4'>
+              {product.descriptionHistories.length > 0 ? (
+                product.descriptionHistories.map((history, index) => (
+                  <Card key={index} className='w-full'>
+                    <CardHeader className='text-sm text-gray-500 space-y-1'>
+                      <div>
+                        <span className='font-medium'>Created:</span>{' '}
+                        {formatReadableDate(history.createdAt)}
+                      </div>
+                      <div>
+                        {history?.updatedAt && (
+                          <>
+                            <span className='font-medium'>Updated:</span>
+                            {formatReadableDate(history.updatedAt)}
+                          </>
+                        )}
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className='prose max-w-none'>
+                      {renderRichText(history.description)}
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <p className='text-gray-500'>No description history found.</p>
+              )}
+            </div>
           </div>
-        )}
-      </div>
+          <div className='mt-8 bg-white rounded-lg'>
+            <h2 className='text-2xl font-bold mb-4'>Product Q&A</h2>
+            {productQuestionsQuery.isLoading ? (
+              <p className='text-gray-500'>
+                <Button disabled size='lg'>
+                  <Spinner />
+                  Loading questions...
+                </Button>
+              </p>
+            ) : productQuestionsQuery.isError ? (
+              <p className='text-red-500'>Error loading questions</p>
+            ) : (
+              <>
+                {isAuthenticated && (
+                  <CreateQuestionNode
+                    user={user}
+                    onCreateQuestion={handleCreateQuestion}
+                    isCreating={createQuestionMutation.isPending}
+                    isSuccessful={createQuestionMutation.isSuccess}
+                  />
+                )}
 
-      <div className='mt-8 bg-white rounded-lg p-6'>
-        <h2 className='text-2xl font-bold mb-4'>Product Q&A</h2>
-        {productQuestionsQuery.isLoading ? (
-          <p className='text-gray-500'>
-            <Button disabled size='lg'>
-              <Spinner />
-              Loading questions...
-            </Button>
-          </p>
-        ) : productQuestionsQuery.isError ? (
-          <p className='text-red-500'>Error loading questions</p>
-        ) : (
-          <>
-            {isAuthenticated && (
-              <CreateQuestionNode
-                user={user}
-                onCreateQuestion={handleCreateQuestion}
-                isCreating={createQuestionMutation.isPending}
-                isSuccessful={createQuestionMutation.isSuccess}
-              />
+                <ProductQuestionTree
+                  questions={productQuestionsQuery.data || []}
+                  actions={questionActions}
+                  ui={questionUI}
+                  mutation={questionMutation}
+                />
+              </>
             )}
-
-            <ProductQuestionTree
-              questions={productQuestionsQuery.data || []}
-              actions={questionActions}
-              ui={questionUI}
-              mutation={questionMutation}
-            />
-          </>
-        )}
+          </div>
+        </div>
       </div>
     </div>
   )

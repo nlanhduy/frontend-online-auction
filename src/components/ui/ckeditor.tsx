@@ -1,11 +1,24 @@
-import 'ckeditor5/ckeditor5.css';
+import 'ckeditor5/ckeditor5.css'
 
 import {
-    Alignment, BlockQuote, Bold, ClassicEditor, Essentials, FontBackgroundColor, FontColor,
-    FontSize, Heading, Italic, Link, List, Paragraph, Strikethrough, Underline
-} from 'ckeditor5';
+  Alignment,
+  BlockQuote,
+  Bold,
+  ClassicEditor,
+  Essentials,
+  FontBackgroundColor,
+  FontColor,
+  FontSize,
+  Heading,
+  Italic,
+  Link,
+  List,
+  Paragraph,
+  Strikethrough,
+  Underline,
+} from 'ckeditor5'
 
-import { CKEditor } from '@ckeditor/ckeditor5-react';
+import { CKEditor } from '@ckeditor/ckeditor5-react'
 
 interface RichTextEditorProps {
   value?: string
@@ -247,6 +260,12 @@ export default function RichTextEditor({
           heading: {
             options: [
               { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+              {
+                model: 'heading1',
+                view: 'h1',
+                title: 'Heading 1',
+                class: 'ck-heading_heading1',
+              },
               {
                 model: 'heading2',
                 view: 'h2',

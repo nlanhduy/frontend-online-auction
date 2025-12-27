@@ -45,6 +45,13 @@ export default function CategoryPage() {
 
   const debouncedQuery = useDebouncedSearch(searchQuery, 500)
 
+  const { currentPage, pageSize, goToPage, nextPage, previousPage, getPaginationInfo } =
+    usePagination({
+      initialPage: 1,
+      initialPageSize: 8,
+      scrollToTop: true,
+    })
+
   // Build API params
   const apiParams = useMemo(
     () => ({
@@ -52,8 +59,10 @@ export default function CategoryPage() {
       searchType: debouncedQuery.trim() ? searchType : undefined,
       sortBy: sortBy,
       categoryId: categoryId,
+      page: currentPage,
+      limit: pageSize,
     }),
-    [debouncedQuery, searchType, sortBy, categoryId],
+    [debouncedQuery, searchType, sortBy, categoryId, currentPage, pageSize],
   )
 
   // Fetch all products without pagination from API
@@ -77,13 +86,6 @@ export default function CategoryPage() {
   })
 
   const allProducts = data?.data?.products || []
-
-  const { currentPage, pageSize, goToPage, nextPage, previousPage, getPaginationInfo } =
-    usePagination({
-      initialPage: 1,
-      initialPageSize: 5,
-      scrollToTop: true,
-    })
 
   const serverPaginationData = data?.data
     ? {

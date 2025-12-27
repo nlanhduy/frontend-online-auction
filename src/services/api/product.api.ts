@@ -142,4 +142,40 @@ export const ProductAPI = {
       ...options,
     })
   },
+
+  getMyProducts({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'get',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/products/my-products`,
+      ...options,
+    })
+  },
+
+  updateProductStatus({ options, variables }: APIParams): ApiResponse {
+    return request({
+      method: 'patch',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/products/${variables.productId}`,
+      ...options,
+    })
+  },
+
+  updateProductHistory({ options, variables }: APIParams): ApiResponse {
+    return request({
+      method: 'patch',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/products/description-history/${variables.historyId}`,
+      ...options,
+    })
+  },
+
+  getAllProducts({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'get',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/products`,
+      ...options,
+    })
+  },
 }

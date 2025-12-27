@@ -15,6 +15,7 @@ export const QUERY_KEYS = {
   user: {
     profile: (userId: string) => ['user', 'profile', userId] as const,
     all: ['user', 'all'] as const,
+    myProducts: ['user', 'my-products'] as const,
   },
 
   // Products related
