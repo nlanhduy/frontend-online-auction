@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { UserRole } from './auth.types'
 
 export interface Description {
   description: string
@@ -10,7 +10,10 @@ export interface Product {
   priceStep: number
   images: string[]
   status: ProductStatus
-  seller: any
+  seller: {
+    id: string
+    fullName: string
+  }
   description: {
     content: string
   }
@@ -25,7 +28,10 @@ export interface Product {
   timeRemaining: number
   startTime?: string
   totalBids: number
-  highestBidder: string | null
+  highestBidder: {
+    id: string
+    fullName: string
+  }
   category: {
     id: string
     name: string
@@ -46,3 +52,29 @@ export interface SearchProductsParams {
 }
 
 export type ProductStatus = 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
+
+export type ProductPermission = {
+  canRate: boolean
+  reason: string | null
+
+  ratingTarget: UserRole
+
+  productInfo: Record<string, unknown>
+
+  id: string
+  name: string
+  status: ProductStatus
+
+  seller: {
+    id: string
+    fullName: string
+  } | null
+
+  winner: {
+    id: string
+    fullName: string
+  } | null
+
+  hasAlreadyRated: boolean
+  userRole: UserRole
+}

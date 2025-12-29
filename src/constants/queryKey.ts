@@ -15,7 +15,12 @@ export const QUERY_KEYS = {
   user: {
     profile: (userId: string) => ['user', 'profile', userId] as const,
     all: ['user', 'all'] as const,
-    myProducts: ['user', 'my-products'] as const,
+    myProducts: (userId?: string) => ['user', 'my-products', userId] as const,
+    myActiveBids: (userId?: string) => ['user', 'my-active-bids', userId] as const,
+    wonAuctions: (userId?: string) => ['user', 'won-auctions', userId] as const,
+    myCompletedAuctions: (userId?: string) =>
+      ['user', 'my-completed-auctions', userId] as const,
+    myRating: (userId?: string) => ['user', 'my-rating', userId] as const,
   },
 
   // Products related
@@ -24,6 +29,8 @@ export const QUERY_KEYS = {
     search: (params: SearchProductsParams) => ['products', 'search', params] as const,
     detail: (productId: string) => ['products', 'detail', productId] as const,
     all: ['products', 'all'] as const,
+    permission: ({ productId, userId }: { userId?: string; productId?: string }) =>
+      ['products', 'permission', productId, userId] as const,
   },
 
   categories: {

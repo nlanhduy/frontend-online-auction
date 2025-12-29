@@ -1,19 +1,6 @@
-import { BookIcon, PlusIcon, Trash } from 'lucide-react'
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
+import { BrushCleaning } from 'lucide-react'
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import {
@@ -30,32 +17,22 @@ import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
 import { useAuth } from '@/hooks/use-auth'
 import { usePagination } from '@/hooks/use-pagination'
-import { getPageNumbers, handleApiError } from '@/lib/utils'
+import { getPageNumbers } from '@/lib/utils'
 import { AuthAPI } from '@/services/api/auth.api'
-import { ProductAPI } from '@/services/api/product.api'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 
-import type { Action } from '@/components/ui/action-menu'
-function SellerProductsPage() {
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [productToDelete, setProductToDelete] = useState<{
-    id: string
-    name: string
-  } | null>(null)
-
+function ActiveBidsPage() {
   const { user } = useAuth()
-  const navigate = useNavigate()
   const { currentPage, pageSize, goToPage, nextPage, previousPage, getPaginationInfo } =
     usePagination({
       initialPage: 1,
       initialPageSize: 8,
       scrollToTop: true,
     })
-  const queryClient = useQueryClient()
   const productQuery = useQuery({
-    queryKey: [QUERY_KEYS.user.myProducts(user?.id), currentPage, pageSize],
+    queryKey: [QUERY_KEYS.user.myActiveBids(user?.id), currentPage, pageSize],
     queryFn: () =>
-      AuthAPI.getMyProducts({
+      AuthAPI.getBidderActiveBids({
         options: {
           params: {
             page: currentPage,
@@ -66,25 +43,8 @@ function SellerProductsPage() {
     staleTime: 1000 * 60 * 5,
   })
 
-  const deleteProductMutation = useMutation({
-    mutationFn: (id: string) =>
-      ProductAPI.deleteProduct({ variables: { productId: id } }),
-    onSuccess: () => {
-      toast.success('Product deleted successfully')
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.user.myProducts(user?.id)],
-        exact: false,
-      })
-      setDeleteDialogOpen(false)
-      setProductToDelete(null)
-    },
-    onError: err => {
-      handleApiError(err)
-      setDeleteDialogOpen(false)
-    },
-  })
-
-  const allProducts = productQuery?.data?.data.items || []
+  const allProducts =
+    productQuery?.data?.data.items.map((product: any) => product.product) || []
   const serverPaginationData = productQuery.data
     ? {
         items: allProducts,
@@ -99,65 +59,8 @@ function SellerProductsPage() {
   const paginationInfo = getPaginationInfo(serverPaginationData)
   const { totalPages } = paginationInfo
 
-  const handleDeleteClick = (product: any) => {
-    setProductToDelete({ id: product.id, name: product.name || 'this product' })
-    setDeleteDialogOpen(true)
-  }
-
-  const handleConfirmDelete = () => {
-    if (productToDelete) {
-      deleteProductMutation.mutate(productToDelete.id)
-    }
-  }
-
-  const getActions = (product: any): Action[] => [
-    {
-      label: 'Delete',
-      action: () => handleDeleteClick(product),
-      icon: <Trash />,
-    },
-    {
-      label: 'Add description',
-      action: () => {
-        navigate(`/seller/products/${product.id}/edit`)
-      },
-      icon: <BookIcon />,
-    },
-  ]
-
   return (
     <>
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete{' '}
-              <span className='font-semibold'>{productToDelete?.name}</span> and remove it
-              from our servers.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleteProductMutation.isPending}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              disabled={deleteProductMutation.isPending}
-              className='bg-red-600 hover:bg-red-700'>
-              {deleteProductMutation.isPending ? (
-                <>
-                  <Spinner />
-                  Deleting...
-                </>
-              ) : (
-                'Delete'
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       {/* Products Grid */}
       <div className='container mx-auto py-12'>
         {productQuery.isPending ? (
@@ -176,15 +79,6 @@ function SellerProductsPage() {
           </div>
         ) : allProducts.length > 0 ? (
           <>
-            <div className='flex w-full mb-8'>
-              {/* Create product button */}
-              <Button
-                onClick={() => navigate('/seller/products/new')}
-                className='flex items-center ml-auto gap-2'>
-                <PlusIcon className='w-4 h-4' />
-                Create Product
-              </Button>
-            </div>
             <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 relative'>
               {/* Overlay when fetching */}
               {productQuery.isFetching && (
@@ -193,11 +87,7 @@ function SellerProductsPage() {
                 </div>
               )}
               {allProducts.map((product: any) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  actions={getActions(product)}
-                />
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
 
@@ -256,8 +146,9 @@ function SellerProductsPage() {
         ) : (
           <div className='h-full py-12'>
             <EmptyState
-              title='You don’t have any products yet'
-              description='You can create a new product by clicking the button below.'
+              icon={<BrushCleaning />}
+              title='No active bids found'
+              description='You don’t have any ongoing bids right now.'
               button1={{
                 label: 'Browse All Products',
                 href: '/search',
@@ -270,4 +161,4 @@ function SellerProductsPage() {
   )
 }
 
-export default SellerProductsPage
+export default ActiveBidsPage

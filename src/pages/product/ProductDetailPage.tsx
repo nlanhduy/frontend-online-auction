@@ -378,7 +378,9 @@ export default function ProductDetail() {
                 <User className='w-5 h-5 text-blue-600' />
                 <div>
                   <p className='text-sm text-gray-600'>Highest bidder</p>
-                  <p className='font-semibold text-blue-700'>{product.highestBidder}</p>
+                  <p className='font-semibold text-blue-700'>
+                    {product.highestBidder.fullName}
+                  </p>
                 </div>
               </div>
             )}
@@ -419,7 +421,7 @@ export default function ProductDetail() {
                 <User className='w-6 h-6 text-blue-600' />
               </div>
               <div>
-                <p className='font-semibold'>{product.seller.fullName}</p>
+                <p className='font-semibold'>{product.seller?.fullName}</p>
                 <p className='text-sm text-gray-600'>
                   ID: {product.seller.id.slice(0, 8)}...
                 </p>

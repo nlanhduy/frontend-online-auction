@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
 import { Clock, Gavel, Heart, Zap } from 'lucide-react'
@@ -7,7 +8,14 @@ import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { useAuth } from '@/hooks/use-auth'
 import { useAddToWatchList } from '@/hooks/use-watchlist'
-import { cn, formatPrice, getTimeRemaining, isProductNew } from '@/lib/utils'
+import {
+  cn,
+  formatPrice,
+  formatReadableDate,
+  getProductStatusColor,
+  getTimeRemaining,
+  isProductNew,
+} from '@/lib/utils'
 
 import { ActionMenu } from './action-menu'
 import { CategoryTag } from './category-tag'
@@ -18,7 +26,7 @@ import type { Product } from '@/types/product.type'
 
 interface ProductCardProps {
   product: Product
-  size?: 'medium' | 'large'
+  size?: 'medium' | 'large' | 'detail'
   actions?: Action[]
 }
 
@@ -100,7 +108,7 @@ function MediumProductCard({ product, actions }: ProductCardProps) {
           <div className='text-xs text-gray-600 flex items-center gap-1'>
             <Gavel className='w-3 h-3' />
             <span>
-              <strong>{product.highestBidder}</strong> is leading
+              <strong>{product.highestBidder.fullName}</strong> is leading
             </span>
           </div>
         )}
@@ -204,7 +212,9 @@ function LargeProductCard({ product, actions }: ProductCardProps) {
             <div className='text-sm text-gray-600 flex items-center gap-2 bg-blue-50 p-2 rounded'>
               <Gavel className='w-4 h-4 text-blue-600' />
               <span className='flex flex-col'>
-                <strong className='text-blue-600'>{product.highestBidder}</strong>
+                <strong className='text-blue-600'>
+                  {product.highestBidder.fullName}
+                </strong>
                 <span>is leading</span>
               </span>
             </div>
@@ -222,6 +232,110 @@ function LargeProductCard({ product, actions }: ProductCardProps) {
         </div>
       </div>
     </Card>
+  )
+}
+
+function ProductDetailCard({ product: productDetail, actions }: ProductCardProps) {
+  return (
+    <div className='bg-white rounded-lg shadow-md p-6'>
+      <div className='flex items-start justify-between mb-4'>
+        <h1 className='text-2xl font-bold text-gray-900'>{productDetail.name}</h1>
+        <span
+          className={`px-3 py-1 rounded-full text-sm font-medium ${getProductStatusColor(productDetail.status)}`}>
+          {productDetail.status}
+        </span>
+      </div>
+
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+        {/* Images Section */}
+        <div>
+          <h3 className='text-sm font-semibold text-gray-700 mb-3'>Main Image</h3>
+          <img
+            src={productDetail.mainImage}
+            alt={productDetail.name}
+            className='w-full h-64 object-cover rounded-lg mb-4'
+          />
+
+          <h3 className='text-sm font-semibold text-gray-700 mb-3'>Additional Images</h3>
+          <div className='grid grid-cols-3 gap-2'>
+            {productDetail.images.map(
+              (img: string | undefined, idx: React.Key | null | undefined) => (
+                <img
+                  key={idx}
+                  src={img}
+                  alt={productDetail.name}
+                  className='w-full h-24 object-cover rounded'
+                />
+              ),
+            )}
+          </div>
+        </div>
+
+        {/* Product Details */}
+        <div className='space-y-4'>
+          <div>
+            <h3 className='text-sm font-semibold text-gray-700'>Category</h3>
+            <p className='text-gray-900'>{productDetail.category.name}</p>
+            <p className='text-sm text-gray-500'>{productDetail.category.description}</p>
+          </div>
+
+          <div className='grid grid-cols-2 gap-4'>
+            <div>
+              <h3 className='text-sm font-semibold text-gray-700'>Initial Price</h3>
+              <p className='text-lg font-bold text-blue-600'>
+                {formatPrice(productDetail.initialPrice)}
+              </p>
+            </div>
+            <div>
+              <h3 className='text-sm font-semibold text-gray-700'>Current Price</h3>
+              <p className='text-lg font-bold text-green-600'>
+                {formatPrice(productDetail.currentPrice)}
+              </p>
+            </div>
+            <div>
+              <h3 className='text-sm font-semibold text-gray-700'>Buy Now Price</h3>
+              <p className='text-lg font-bold text-purple-600'>
+                {formatPrice(productDetail.buyNowPrice)}
+              </p>
+            </div>
+            <div>
+              <h3 className='text-sm font-semibold text-gray-700'>Price Step</h3>
+              <p className='text-gray-900'>{formatPrice(productDetail.priceStep)}</p>
+            </div>
+          </div>
+
+          <div>
+            <h3 className='text-sm font-semibold text-gray-700'>Start Time</h3>
+            <p className='text-gray-900'>{formatReadableDate(productDetail.startTime)}</p>
+          </div>
+
+          <div>
+            <h3 className='text-sm font-semibold text-gray-700'>End Time</h3>
+            <p className='text-gray-900'>{formatReadableDate(productDetail.endTime)}</p>
+          </div>
+
+          <div className='grid grid-cols-2 gap-4 text-sm'>
+            <div>
+              <h3 className='font-semibold text-gray-700'>Created At</h3>
+              <p className='text-gray-600'>
+                {formatReadableDate(productDetail.createdAt)}
+              </p>
+            </div>
+            <div>
+              <h3 className='font-semibold text-gray-700'>Updated At</h3>
+              <p className='text-gray-600'>
+                {formatReadableDate(productDetail.updatedAt)}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h3 className='text-sm font-semibold text-gray-700'>Seller</h3>
+            <p className='text-gray-900'>{productDetail.seller?.fullName}</p>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -243,11 +357,9 @@ export function ProductCard(props: ProductCardProps) {
 
   return (
     <div className='relative h-full'>
-      {size === 'large' ? (
-        <LargeProductCard {...props} actions={actions} />
-      ) : (
-        <MediumProductCard {...props} actions={actions} />
-      )}
+      {size === 'large' && <LargeProductCard product={product} actions={actions} />}
+      {size === 'medium' && <MediumProductCard product={product} actions={actions} />}
+      {size === 'detail' && <ProductDetailCard product={product} />}
     </div>
   )
 }

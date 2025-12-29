@@ -169,4 +169,12 @@ export const ProductAPI = {
       ...options,
     })
   },
+  getPermissions({ options, variables }: APIParams): ApiResponse {
+    return request({
+      method: 'get',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/products/${variables.productId}/review-permission`,
+      ...options,
+    })
+  },
 }

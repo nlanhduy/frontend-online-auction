@@ -20,9 +20,6 @@ export const axiosInstance = axios.create({
   },
 })
 
-/* ============================
-   REQUEST INTERCEPTOR
-============================ */
 axiosInstance.interceptors.request.use(
   config => {
     const token = useAuthStore.getState().accessToken

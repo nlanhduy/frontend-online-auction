@@ -10,10 +10,16 @@ import RequestToSellerList from './pages/admin/request-to-sellers/RequestToSelle
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
+import ActiveBidsPage from './pages/bidder/ActiveBidsPage'
+import RatingWonAuctionPage from './pages/bidder/RatingWonAuctionPage'
+import WonAuctionsPage from './pages/bidder/WonAuctionsPage'
 import CategoryPage from './pages/category/CategoryPage'
 import Homepage from './pages/homepage/Homepage'
 import ProductDetail from './pages/product/ProductDetailPage'
+import RatingPage from './pages/rating/RatingPage'
 import SearchPage from './pages/search/SearchPage'
+import CompletedAuctionsPage from './pages/seller/auction/CompletedAuctionsPage'
+import RatingCompletedAuctionPage from './pages/seller/auction/RatingCompletedAuctionPage'
 import CreateProductPage from './pages/seller/product/CreateProductPage'
 import EditProductPage from './pages/seller/product/EditProductPage'
 import SellerProductsPage from './pages/seller/product/SellerProductsPage'
@@ -63,7 +69,7 @@ function App() {
           element={
             <ProtectedRoute
               allowedRoles={[UserRole.Bidder, UserRole.Seller, UserRole.Admin]}>
-              {/* <ProfilePage /> */}
+              <RatingPage />
             </ProtectedRoute>
           }
         />
@@ -76,29 +82,30 @@ function App() {
           }
         />
         <Route
-          path='my-bids'
-          element={
-            <ProtectedRoute allowedRoles={[UserRole.Bidder, UserRole.Seller]}>
-              {/* <MyBidsPage /> */}
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='my-wins'
-          element={
-            <ProtectedRoute allowedRoles={[UserRole.Bidder, UserRole.Seller]}>
-              {/* <MyWinsPage /> */}
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path='upgrade-seller'
+          path='bidder/active-bids'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Bidder]}>
-              {/* <UpgradeSellerPage /> */}
+              <ActiveBidsPage />
             </ProtectedRoute>
           }
         />
+        <Route
+          path='bidder/won-auctions'
+          element={
+            <ProtectedRoute allowedRoles={[UserRole.Bidder]}>
+              <WonAuctionsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='bidder/won-auctions/:id/rating'
+          element={
+            <ProtectedRoute allowedRoles={[UserRole.Bidder]}>
+              <RatingWonAuctionPage />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path='settings'
           element={
@@ -135,10 +142,19 @@ function App() {
           }
         />
         <Route
-          path='seller/sales'
+          path='seller/completed-auctions'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Seller]}>
-              {/* <SellerSalesPage /> */}
+              <CompletedAuctionsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path='seller/completed-auctions/:id/rating'
+          element={
+            <ProtectedRoute allowedRoles={[UserRole.Seller]}>
+              <RatingCompletedAuctionPage />
             </ProtectedRoute>
           }
         />

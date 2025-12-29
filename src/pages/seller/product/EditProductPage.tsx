@@ -6,20 +6,15 @@ import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import RichTextEditor from '@/components/ui/ckeditor'
+import { ProductCard } from '@/components/ui/product-card'
 import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
 import { renderRichText } from '@/lib/renderRichText'
-import {
-  formatPrice,
-  formatReadableDate,
-  getProductStatusColor,
-  handleApiError,
-} from '@/lib/utils'
+import { formatReadableDate, handleApiError } from '@/lib/utils'
 import { ProductAPI } from '@/services/api/product.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { Product } from '@/types/product.type'
-
 const EditProductPage = () => {
   const { id: productId } = useParams<{ id: string }>()
   const [newDescription, setNewDescription] = useState('')
@@ -99,112 +94,7 @@ const EditProductPage = () => {
   return (
     <div className='max-w-7xl mx-auto p-6 space-y-6'>
       {/* Product Info Card */}
-      <div className='bg-white rounded-lg shadow-md p-6'>
-        <div className='flex items-start justify-between mb-4'>
-          <h1 className='text-2xl font-bold text-gray-900'>{productDetail.name}</h1>
-          <span
-            className={`px-3 py-1 rounded-full text-sm font-medium ${getProductStatusColor(productDetail.status)}`}>
-            {productDetail.status}
-          </span>
-        </div>
-
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-          {/* Images Section */}
-          <div>
-            <h3 className='text-sm font-semibold text-gray-700 mb-3'>Main Image</h3>
-            <img
-              src={productDetail.mainImage}
-              alt={productDetail.name}
-              className='w-full h-64 object-cover rounded-lg mb-4'
-            />
-
-            <h3 className='text-sm font-semibold text-gray-700 mb-3'>
-              Additional Images
-            </h3>
-            <div className='grid grid-cols-3 gap-2'>
-              {productDetail.images.map(
-                (img: string | undefined, idx: React.Key | null | undefined) => (
-                  <img
-                    key={idx}
-                    src={img}
-                    alt={productDetail.name}
-                    className='w-full h-24 object-cover rounded'
-                  />
-                ),
-              )}
-            </div>
-          </div>
-
-          {/* Product Details */}
-          <div className='space-y-4'>
-            <div>
-              <h3 className='text-sm font-semibold text-gray-700'>Category</h3>
-              <p className='text-gray-900'>{productDetail.category.name}</p>
-              <p className='text-sm text-gray-500'>
-                {productDetail.category.description}
-              </p>
-            </div>
-
-            <div className='grid grid-cols-2 gap-4'>
-              <div>
-                <h3 className='text-sm font-semibold text-gray-700'>Initial Price</h3>
-                <p className='text-lg font-bold text-blue-600'>
-                  {formatPrice(productDetail.initialPrice)}
-                </p>
-              </div>
-              <div>
-                <h3 className='text-sm font-semibold text-gray-700'>Current Price</h3>
-                <p className='text-lg font-bold text-green-600'>
-                  {formatPrice(productDetail.currentPrice)}
-                </p>
-              </div>
-              <div>
-                <h3 className='text-sm font-semibold text-gray-700'>Buy Now Price</h3>
-                <p className='text-lg font-bold text-purple-600'>
-                  {formatPrice(productDetail.buyNowPrice)}
-                </p>
-              </div>
-              <div>
-                <h3 className='text-sm font-semibold text-gray-700'>Price Step</h3>
-                <p className='text-gray-900'>{formatPrice(productDetail.priceStep)}</p>
-              </div>
-            </div>
-
-            <div>
-              <h3 className='text-sm font-semibold text-gray-700'>Start Time</h3>
-              <p className='text-gray-900'>
-                {formatReadableDate(productDetail.startTime)}
-              </p>
-            </div>
-
-            <div>
-              <h3 className='text-sm font-semibold text-gray-700'>End Time</h3>
-              <p className='text-gray-900'>{formatReadableDate(productDetail.endTime)}</p>
-            </div>
-
-            <div className='grid grid-cols-2 gap-4 text-sm'>
-              <div>
-                <h3 className='font-semibold text-gray-700'>Created At</h3>
-                <p className='text-gray-600'>
-                  {formatReadableDate(productDetail.createdAt)}
-                </p>
-              </div>
-              <div>
-                <h3 className='font-semibold text-gray-700'>Updated At</h3>
-                <p className='text-gray-600'>
-                  {formatReadableDate(productDetail.updatedAt)}
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <h3 className='text-sm font-semibold text-gray-700'>Seller</h3>
-              <p className='text-gray-900'>{productDetail.seller.fullName}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <ProductCard size='detail' product={productDetail} />
       {/* Descriptions History */}
       <div className='bg-white rounded-lg shadow-md p-6'>
         <h2 className='text-xl font-bold text-gray-900 mb-4'>Description History</h2>

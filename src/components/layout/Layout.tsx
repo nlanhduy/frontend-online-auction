@@ -83,9 +83,13 @@ export function Layout() {
           <>
             {commonItems}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate('/my-bids')}>
+            <DropdownMenuItem onClick={() => navigate('/bidder/active-bids')}>
               <Package className='mr-2 h-4 w-4' />
-              My Bids
+              My active bids
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/bidder/won-auctions')}>
+              <Gavel className='mr-2 h-4 w-4' />
+              My won auctions
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate('/watchlist')}>
               <FileText className='mr-2 h-4 w-4' />
@@ -102,6 +106,10 @@ export function Layout() {
             <DropdownMenuItem onClick={() => navigate('/watchlist')}>
               <FileText className='mr-2 h-4 w-4' />
               Watchlist
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/seller/completed-auctions')}>
+              <Gavel className='mr-2 h-4 w-4' />
+              Completed Auctions
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate('/seller/products')}>
               <TableProperties className='mr-2 h-4 w-4' />

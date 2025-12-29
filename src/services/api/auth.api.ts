@@ -174,4 +174,46 @@ export const AuthAPI = {
       ...options,
     })
   },
+
+  getBidderActiveBids({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'get',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/me/active-bids`,
+      ...options,
+    })
+  },
+  getBidderWonAuctions({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'get',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/me/won-auctions`,
+      ...options,
+    })
+  },
+
+  getSellerCopletedSales({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'get',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/me/completed-sales`,
+      ...options,
+    })
+  },
+  createRating({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'post',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/ratings`,
+      ...options,
+    })
+  },
+  getMyRating({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'get',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/me/ratings/details  `,
+      ...options,
+    })
+  },
 }

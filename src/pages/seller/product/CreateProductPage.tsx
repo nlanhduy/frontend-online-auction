@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { QUERY_KEYS } from '@/constants/queryKey'
+import { useAuth } from '@/hooks/use-auth'
 import { formatNumber, parseNumber } from '@/lib/utils'
 import { productSchema } from '@/lib/validation/product'
 import { CategoryAPI } from '@/services/api/category.api'
@@ -58,6 +59,7 @@ function FormFieldWrapper({
 // Main Component
 export default function CreateProductPage() {
   const [isUploading, setIsUploading] = useState(false)
+  const { user } = useAuth()
   const [isMainImageUploading, setIsMainImageUploading] = useState(false)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -86,7 +88,7 @@ export default function CreateProductPage() {
       ProductAPI.createProduct({ options: { data } }),
     onSuccess: () => {
       toast.success('Product created successfully!')
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.user.myProducts] })
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.user.myProducts(user?.id)] })
       navigate('/seller/products')
     },
   })
