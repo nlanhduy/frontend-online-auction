@@ -7,6 +7,7 @@ export interface Description {
 }
 
 export interface Product {
+  allowNewBidders: boolean
   priceStep: number
   images: string[]
   status: ProductStatus

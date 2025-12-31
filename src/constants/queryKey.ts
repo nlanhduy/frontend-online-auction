@@ -31,6 +31,8 @@ export const QUERY_KEYS = {
     all: ['products', 'all'] as const,
     permission: ({ productId, userId }: { userId?: string; productId?: string }) =>
       ['products', 'permission', productId, userId] as const,
+    bidHistory: (productId: string) => ['products', 'bid-history', productId] as const,
+    related: (productId: string) => ['products', 'related', productId] as const,
   },
 
   categories: {
