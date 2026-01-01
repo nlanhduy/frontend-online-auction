@@ -7,6 +7,7 @@ import { Layout } from './components/layout/Layout'
 import { CategoryManager } from './pages/admin/category/CategoryManagementPage'
 import ProductManageMentPage from './pages/admin/product/ProductManagementPage'
 import RequestToSellerList from './pages/admin/request-to-sellers/RequestToSellerPage'
+import { AuthCallbackPage } from './pages/auth/AuthCallBackPage'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
@@ -52,6 +53,15 @@ function App() {
         element={
           <GuestRoute>
             <ForgotPasswordPage />
+          </GuestRoute>
+        }
+      />
+
+      <Route
+        path='/auth/callback'
+        element={
+          <GuestRoute>
+            <AuthCallbackPage />
           </GuestRoute>
         }
       />

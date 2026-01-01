@@ -17,6 +17,8 @@ import { useLogin } from '@/hooks/use-auth'
 import { loginSchema } from '@/lib/validation/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
 
+import { GoogleOAuthButton } from '../ui/google-oauth-button'
+
 import type { LoginFormData } from '@/lib/validation/auth'
 export function LoginForm() {
   const { mutate: login, isPending } = useLogin()
@@ -43,6 +45,7 @@ export function LoginForm() {
       </CardHeader>
 
       <CardContent>
+        <GoogleOAuthButton className='mb-4 w-full' mode='login' />
         <form id='login-form' onSubmit={form.handleSubmit(onSubmit)}>
           <FieldGroup>
             {/* Email Field */}

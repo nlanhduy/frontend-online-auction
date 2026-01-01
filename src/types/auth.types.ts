@@ -17,6 +17,7 @@ export interface User {
   createdAt: string
   positiveRating: number
   negativeRating: number
+  profilePicture?: string
 }
 
 export interface AuthTokens {

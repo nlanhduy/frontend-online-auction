@@ -32,6 +32,7 @@ import { AuthAPI } from '@/services/api/auth.api'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 
+import { GoogleOAuthButton } from '../ui/google-oauth-button'
 import { Spinner } from '../ui/spinner'
 import { OTPVerificationModal } from './OTPVerificationModal'
 
@@ -136,6 +137,7 @@ export function RegisterForm() {
         </CardHeader>
 
         <CardContent>
+          <GoogleOAuthButton className='mb-4 w-full' mode='register' />
           <form id='register-form' onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup>
               {/* Full Name */}

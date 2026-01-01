@@ -10,6 +10,7 @@ export const QUERY_KEYS = {
     refresh: ['auth', 'refresh'] as const,
     logout: ['auth', 'logout'] as const,
     me: ['auth', 'me'] as const,
+    googleLogin: ['auth', 'google-login'] as const,
   },
 
   user: {

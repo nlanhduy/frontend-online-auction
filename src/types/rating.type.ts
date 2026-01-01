@@ -9,6 +9,7 @@ export interface Rating {
     id: string
     fullName: string
     avatar: string
+    profilePicture?: string
   }
 }
 

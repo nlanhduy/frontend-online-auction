@@ -60,35 +60,6 @@ export const useLogin = () => {
   })
 }
 
-// Register Mutation
-export const useRegister = (onSuccess?: (email: string) => void) => {
-  return useMutation({
-    mutationKey: QUERY_KEYS.auth.register,
-    mutationFn: async (data: any) => {
-      const response = await AuthAPI.register({
-        options: { data },
-      })
-      return response.data
-    },
-    onSuccess: (data: any) => {
-      toast.success('Registration successful!', {
-        description: 'Please verify your email with the OTP code',
-      })
-
-      if (onSuccess) {
-        onSuccess(data.email)
-      }
-    },
-    onError: (error: any) => {
-      toast.error('Registration failed', {
-        description:
-          error.response?.data?.message ||
-          'Email might already be in use. Please try again.',
-      })
-    },
-  })
-}
-
 // Verify OTP Mutation
 export const useVerifyOTP = (onSuccess?: () => void) => {
   const navigate = useNavigate()
