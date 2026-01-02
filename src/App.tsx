@@ -5,6 +5,12 @@ import { GuestRoute } from '@/components/auth/GuestRoute'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 import { Layout } from './components/layout/Layout'
+import OrderFulfillmentPage from './pages/order/OrderFulfillmentPage'
+import PaymentCancelPage from './pages/order/PaymentCancelPage'
+import PaymentSuccessPage from './pages/order/PaymentSuccessPage'
+import ProductDetail from './pages/product/ProductDetailPage'
+import PaymentDemoPage from './pages/test/PaymentDemoPage'
+import PaymentTestPage from './pages/test/PaymentTestPage'
 import { AdminCategories } from './pages/admin/categories'
 import AdminProducts from './pages/admin/products'
 import AdminRequestToSeller from './pages/admin/request-to-seller'
@@ -21,7 +27,6 @@ import RatingWonAuction from './pages/bidder/rating'
 import WonAuctions from './pages/bidder/won-auctions'
 import Category from './pages/category'
 import Homepage from './pages/homepage'
-import ProductDetail from './pages/product/detail'
 import Rating from './pages/rating'
 import SellerCompletedAuctions from './pages/seller/auction/completed'
 import SellerAuctionRating from './pages/seller/auction/rating'
@@ -31,6 +36,7 @@ import SellerProductEdit from './pages/seller/product/edit'
 import { Setting } from './pages/setting'
 import WatchList from './pages/watchList'
 import { UserRole } from './types/auth.types'
+import { SellerOrderConfirmationPage } from './pages/seller/order/SellerOrderConfirmationPage'
 
 function App() {
   return (
@@ -76,6 +82,38 @@ function App() {
         <Route path='/category/:categoryId' element={<Category />} />
         <Route path='/search' element={<Search />} />
         <Route path='/product/:productId' element={<ProductDetail />} />
+
+        {/* Payment Routes */}
+        <Route
+          path='/payment/success'
+          element={
+            <ProtectedRoute allowedRoles={[UserRole.Bidder, UserRole.Seller]}>
+              <PaymentSuccessPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path='/payment/cancel'
+          element={
+            <ProtectedRoute allowedRoles={[UserRole.Bidder, UserRole.Seller]}>
+              <PaymentCancelPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Order Fulfillment Route */}
+        <Route
+          path='/order/:orderId'
+          element={
+            <ProtectedRoute allowedRoles={[UserRole.Bidder, UserRole.Seller]}>
+              <OrderFulfillmentPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Test Route - Remove in production */}
+        <Route path='/test/payment' element={<PaymentTestPage />} />
+        <Route path='/demo/payment' element={<PaymentDemoPage />} />
 
         {/* Bidder Routes */}
         <Route
@@ -169,6 +207,15 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={[UserRole.Seller]}>
               <SellerAuctionRating />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path='seller/orders/:productId/confirm'
+          element={
+            <ProtectedRoute allowedRoles={[UserRole.Seller]}>
+              <SellerOrderConfirmationPage />
             </ProtectedRoute>
           }
         />

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Clock, Gavel, Heart, Package, ShoppingCart, User } from 'lucide-react'
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import {
@@ -43,6 +43,7 @@ import {
   handleApiError,
 } from '@/lib/utils'
 import { BidAPI } from '@/services/api/bid.api'
+import { OrderAPI } from '@/services/api/order.api'
 import { ProductAPI } from '@/services/api/product.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -56,6 +57,7 @@ import type { Product } from '@/types/product.type'
 import type { Bids } from '@/types/bid.type'
 export default function ProductDetail() {
   const { productId } = useParams<{ productId: string }>()
+  const navigate = useNavigate()
   const [selectedImage, setSelectedImage] = useState(0)
   const [bidAmount, setBidAmount] = useState(0)
   const [replyingToId, setReplyingToId] = useState<string | null>(null)
@@ -138,6 +140,50 @@ export default function ProductDetail() {
     enabled: !!productId,
     staleTime: 1000 * 60 * 5,
   })
+
+  // Check if order exists for this product
+  const orderCheckQuery = useQuery({
+    queryKey: ['order-check', productId],
+    queryFn: async () => {
+      try {
+        const response = await OrderAPI.getProductWithOrder({
+          variables: { productId: productId! },
+        })
+        console.log('🔍 Order check response:', response.data)
+        console.log('🔍 Order exists:', !!response.data?.order)
+        console.log('🔍 Payment status:', response.data?.order?.paymentStatus)
+        return response.data
+      } catch (error) {
+        console.log('❌ Order check failed:', error)
+        return null
+      }
+    },
+    enabled: !!productId && isAuthenticated && product?.status === 'COMPLETED',
+    retry: false,
+  })
+
+  // Payment mutation
+  const createPaymentMutation = useMutation({
+    mutationFn: async () => {
+      const response = await OrderAPI.createPaymentOrder({
+        variables: { productId: productId! },
+      })
+      return response.data
+    },
+    onSuccess: (data: any) => {
+      // Store productId in localStorage (more persistent than sessionStorage)
+      localStorage.setItem('pendingProductId', productId!)
+      // Redirect to PayPal
+      window.location.href = data.approvalUrl
+    },
+    onError: (error: any) => {
+      handleApiError(error, 'Không thể tạo thanh toán')
+    },
+  })
+
+  const handlePayment = () => {
+    createPaymentMutation.mutate()
+  }
 
   const addToWatchList = useAddToWatchList()
   const removeFromWatchList = useRemoveFromWatchList()
@@ -483,6 +529,78 @@ export default function ProductDetail() {
                     <p className='font-semibold'>{getTimeRemaining(product.endTime)}</p>
                   </div>
                 </div>
+              </div>
+
+              {/* Payment logic for completed auction */}
+              <div className='space-y-3 pt-4 border-t'>
+                {/* Logic for SELLER - Review order */}
+                {isAuthenticated &&
+                  user?.id === product.seller.id &&
+                  (orderCheckQuery.data?.order ? (
+                    <button
+                      onClick={() => {
+                        navigate(`/seller/orders/${productId}/confirm`)
+                      }}
+                      className='w-full px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 flex items-center justify-center gap-2'>
+                      <Package className='w-5 h-5' />
+                      Review Order
+                    </button>
+                  ) : (
+                    <div className='bg-gray-50 border border-gray-200 rounded-lg p-4'>
+                      <p className='text-gray-600 text-sm text-center'>
+                        Waiting for buyer payment...
+                      </p>
+                    </div>
+                  ))}
+
+                {/* Logic for BUYER - Payment and order tracking */}
+                {isAuthenticated &&
+                  user?.id === product.winnerId &&
+                  (orderCheckQuery.data?.order ? (
+                    orderCheckQuery.data.order.paymentStatus === 'COMPLETED' ? (
+                      <button
+                        onClick={() => {
+                          navigate(`/order/${orderCheckQuery.data.order.id}`)
+                        }}
+                        className='w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 flex items-center justify-center gap-2'>
+                        <Package className='w-5 h-5' />
+                        Continue with Order
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handlePayment}
+                        disabled={createPaymentMutation.isPending}
+                        className='w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2'>
+                        <ShoppingCart className='w-5 h-5' />
+                        {createPaymentMutation.isPending
+                          ? 'Processing...'
+                          : `Pay ${formatPrice(product.currentPrice)}`}
+                      </button>
+                    )
+                  ) : (
+                    <button
+                      onClick={handlePayment}
+                      disabled={createPaymentMutation.isPending}
+                      className='w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2'>
+                      <ShoppingCart className='w-5 h-5' />
+                      {createPaymentMutation.isPending
+                        ? 'Processing...'
+                        : `Pay ${formatPrice(product.currentPrice)}`}
+                    </button>
+                  ))}
+
+                {/* Show auction ended message for other users */}
+                {(!isAuthenticated ||
+                  (user?.id !== product.seller.id && user?.id !== product.winnerId)) && (
+                  <div className='bg-yellow-50 border border-yellow-200 rounded-lg p-4'>
+                    <p className='text-yellow-800 text-sm'>
+                      This auction has ended. Winner:{' '}
+                      <span className='font-semibold'>
+                        {product.highestBidder?.fullName || 'Unknown'}
+                      </span>
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
