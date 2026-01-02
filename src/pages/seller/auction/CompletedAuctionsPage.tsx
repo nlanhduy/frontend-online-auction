@@ -1,4 +1,4 @@
-import { PlusIcon, Star } from 'lucide-react'
+import { Package, PlusIcon, Star } from 'lucide-react'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from 'react-router-dom'
 
@@ -61,16 +61,29 @@ function CompletedAuctionsPage() {
   const paginationInfo = getPaginationInfo(serverPaginationData)
   const { totalPages } = paginationInfo
 
-  const getActions = (product: any): Action[] => [
-    {
+  const getActions = (product: any): Action[] => {
+    const actions: Action[] = []
+
+    if (product.order) {
+      actions.push({
+        label: 'Review order',
+        action: () => {
+          navigate(`/seller/orders/${product.id}/confirm`)
+        },
+        icon: <Package />,
+      })
+    }
+
+    actions.push({
       label: 'Rate & Review Product',
       action: () => {
         navigate(`/seller/completed-auctions/${product.id}/rating`)
       },
       icon: <Star />,
-    },
-  ]
+    })
 
+    return actions
+  }
   return (
     <>
       {/* Products Grid */}

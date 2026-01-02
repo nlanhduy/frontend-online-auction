@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Clock, Gavel, Heart, Package, ShoppingCart, User } from 'lucide-react'
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -23,6 +23,7 @@ import {
   handleApiError,
 } from '@/lib/utils'
 import { ProductAPI } from '@/services/api/product.api'
+import { OrderAPI } from '@/services/api/order.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type {
@@ -34,6 +35,7 @@ import type {
 import type { Product } from '@/types/product.type'
 export default function ProductDetail() {
   const { productId } = useParams<{ productId: string }>()
+  const navigate = useNavigate()
   const [selectedImage, setSelectedImage] = useState(0)
   const [bidAmount, setBidAmount] = useState(0)
   const [replyingToId, setReplyingToId] = useState<string | null>(null)
@@ -54,6 +56,11 @@ export default function ProductDetail() {
     enabled: !!productId,
     staleTime: 1000 * 60 * 5,
   })
+
+  const product = productDetailQuery.data
+
+  // Không tự động redirect nữa - chỉ redirect khi đã có order
+  // Order chỉ được tạo sau khi thanh toán xong
 
   const checkExistedItemQuery = useQuery({
     queryKey: QUERY_KEYS.watchList.check(productId ?? ''),
@@ -89,6 +96,50 @@ export default function ProductDetail() {
 
   const addToWatchList = useAddToWatchList()
   const removeFromWatchList = useRemoveFromWatchList()
+
+  // Check if order exists for this product
+  const orderCheckQuery = useQuery({
+    queryKey: ['order-check', productId],
+    queryFn: async () => {
+      try {
+        const response = await OrderAPI.getProductWithOrder({
+          variables: { productId: productId! },
+        })
+        console.log('🔍 Order check response:', response.data)
+        console.log('🔍 Order exists:', !!response.data?.order)
+        console.log('🔍 Payment status:', response.data?.order?.paymentStatus)
+        return response.data
+      } catch (error) {
+        console.log('❌ Order check failed:', error)
+        return null
+      }
+    },
+    enabled: !!productId && isAuthenticated && product?.status === 'COMPLETED',
+    retry: false,
+  })
+
+  // Payment mutation
+  const createPaymentMutation = useMutation({
+    mutationFn: async () => {
+      const response = await OrderAPI.createPaymentOrder({
+        variables: { productId: productId! },
+      })
+      return response.data
+    },
+    onSuccess: (data: any) => {
+      // Store productId in localStorage (more persistent than sessionStorage)
+      localStorage.setItem('pendingProductId', productId!)
+      // Redirect to PayPal
+      window.location.href = data.approvalUrl
+    },
+    onError: (error: any) => {
+      handleApiError(error, 'Không thể tạo thanh toán')
+    },
+  })
+
+  const handlePayment = () => {
+    createPaymentMutation.mutate()
+  }
 
   const handleAddToWatchList = () => {
     addToWatchList.mutate(product?.id ?? '')
@@ -252,8 +303,8 @@ export default function ProductDetail() {
   }
 
   const isExistedInWatchList = checkExistedItemQuery?.data?.isFavorite
-  const product = productDetailQuery.data
 
+  console.log('Product Detail:', product)
   if (productDetailQuery.isPending)
     return (
       <>
@@ -386,27 +437,100 @@ export default function ProductDetail() {
             )}
 
             <div className='space-y-3 pt-4 border-t'>
-              <div className='flex items-center gap-3'>
-                <input
-                  type='number'
-                  value={bidAmount}
-                  onChange={e => setBidAmount(Number(e.target.value))}
-                  step={product.priceStep}
-                  min={product.currentPrice + product.priceStep}
-                  className='flex-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
-                />
-                <button className='px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 flex items-center gap-2'>
-                  <Gavel className='w-5 h-5' />
-                  Place bid
-                </button>
-              </div>
+              {/* Logic for SELLER - Review order */}
+              {product.status === 'COMPLETED' &&
+                isAuthenticated &&
+                user?.id === product.seller.id &&
+                (orderCheckQuery.data?.order ? (
+                  <button
+                    onClick={() => {
+                      navigate(`/seller/orders/${productId}/confirm`)
+                    }}
+                    className='w-full px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 flex items-center justify-center gap-2'>
+                    <Package className='w-5 h-5' />
+                    Review Order
+                  </button>
+                ) : (
+                  <div className='bg-gray-50 border border-gray-200 rounded-lg p-4'>
+                    <p className='text-gray-600 text-sm text-center'>
+                      Waiting for buyer payment...
+                    </p>
+                  </div>
+                ))}
 
-              {product.buyNowPrice && (
-                <button className='w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 flex items-center justify-center gap-2'>
-                  <ShoppingCart className='w-5 h-5' />
-                  Buy now {formatPrice(product.buyNowPrice)}
-                </button>
-              )}
+              {/* Logic for BUYER - Payment and order tracking */}
+              {product.status === 'COMPLETED' &&
+                isAuthenticated &&
+                user?.id === product.winnerId &&
+                (orderCheckQuery.data?.order ? (
+                  orderCheckQuery.data.order.paymentStatus === 'COMPLETED' ? (
+                    <button
+                      onClick={() => {
+                        navigate(`/order/${orderCheckQuery.data.order.id}`)
+                      }}
+                      className='w-full px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 flex items-center justify-center gap-2'>
+                      <Package className='w-5 h-5' />
+                      Continue with Order
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handlePayment}
+                      disabled={createPaymentMutation.isPending}
+                      className='w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2'>
+                      <ShoppingCart className='w-5 h-5' />
+                      {createPaymentMutation.isPending
+                        ? 'Processing...'
+                        : `Pay ${formatPrice(product.currentPrice)}`}
+                    </button>
+                  )
+                ) : (
+                  <button
+                    onClick={handlePayment}
+                    disabled={createPaymentMutation.isPending}
+                    className='w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2'>
+                    <ShoppingCart className='w-5 h-5' />
+                    {createPaymentMutation.isPending
+                      ? 'Processing...'
+                      : `Pay ${formatPrice(product.currentPrice)}`}
+                  </button>
+                ))}
+
+              {product.status === 'ACTIVE' ? (
+                // Auction is active, show bid buttons
+                <>
+                  <div className='flex items-center gap-3'>
+                    <input
+                      type='number'
+                      value={bidAmount}
+                      onChange={e => setBidAmount(Number(e.target.value))}
+                      step={product.priceStep}
+                      min={product.currentPrice + product.priceStep}
+                      className='flex-1 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+                    />
+                    <button className='px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 flex items-center gap-2'>
+                      <Gavel className='w-5 h-5' />
+                      Place bid
+                    </button>
+                  </div>
+
+                  {product.buyNowPrice && (
+                    <button className='w-full px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 flex items-center justify-center gap-2'>
+                      <ShoppingCart className='w-5 h-5' />
+                      Buy now {formatPrice(product.buyNowPrice)}
+                    </button>
+                  )}
+                </>
+              ) : product.status === 'COMPLETED' ? (
+                // Auction completed but user is not the winner
+                <div className='bg-yellow-50 border border-yellow-200 rounded-lg p-4'>
+                  <p className='text-yellow-800 text-sm'>
+                    This auction has ended. Winner:{' '}
+                    <span className='font-semibold'>
+                      {product.highestBidder?.fullName || 'Unknown'}
+                    </span>
+                  </p>
+                </div>
+              ) : null}
             </div>
           </div>
 

@@ -55,4 +55,15 @@ export const QUERY_KEYS = {
     create: ['request-to-sellers', 'create'] as const,
     detail: (id: string) => ['request-to-sellers', id] as const,
   },
+
+  orders: {
+    detail: (orderId: string) => ['orders', 'detail', orderId] as const,
+    productOrder: (productId: string) => ['orders', 'product', productId] as const,
+    payment: (productId: string) => ['orders', 'payment', productId] as const,
+  },
+
+  ratings: {
+    create: ['ratings', 'create'] as const,
+    update: (ratingId: string) => ['ratings', 'update', ratingId] as const,
+  },
 } as const

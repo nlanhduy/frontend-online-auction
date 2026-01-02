@@ -32,6 +32,11 @@ export interface Product {
     id: string
     fullName: string
   }
+  winner?: {
+    id: string
+    fullName: string
+  }
+  winnerId?: string
   category: {
     id: string
     name: string
