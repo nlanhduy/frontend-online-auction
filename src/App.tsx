@@ -6,6 +6,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 import { Layout } from './components/layout/Layout'
 import { AdminCategories } from './pages/admin/categories'
+import { AdminDashboard } from './pages/admin/dashboard'
 import AdminProducts from './pages/admin/products'
 import AdminRequestToSeller from './pages/admin/request-to-seller'
 import { AdminUsers } from './pages/admin/users'
@@ -61,14 +62,7 @@ function App() {
         }
       />
 
-      <Route
-        path='/auth/callback'
-        element={
-          <GuestRoute>
-            <AuthCallback />
-          </GuestRoute>
-        }
-      />
+      <Route path='/auth/callback' element={<AuthCallback />} />
 
       {/* Public Routes with appropriate layout */}
       <Route element={<Layout />}>
@@ -178,7 +172,7 @@ function App() {
           path='admin'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Admin]}>
-              {/* <AdminDashboard /> */}
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />

@@ -59,4 +59,10 @@ export const QUERY_KEYS = {
     create: ['request-to-sellers', 'create'] as const,
     detail: (id: string) => ['request-to-sellers', id] as const,
   },
+
+  admin: {
+    stats: ['admin', 'dashboard', 'stats'] as const,
+    userGrowth: ['admin', 'dashboard', 'user-growth'] as const,
+    auctionsStats: ['admin', 'dashboard', 'auctions-stats'] as const,
+  },
 } as const
