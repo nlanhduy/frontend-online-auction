@@ -3,6 +3,8 @@ import dayjs from 'dayjs'
 import { toast } from 'sonner'
 import { twMerge } from 'tailwind-merge'
 
+import { UserRole } from '@/types/auth.types'
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type { ClassValue } from 'class-variance-authority/types'
@@ -139,4 +141,42 @@ export const getProductStatusColor = (status: ProductStatus) => {
   }
 
   return colors[status]
+}
+
+export const getUserRoleColor = (role: UserRole) => {
+  const roles: Record<UserRole, string> = {
+    [UserRole.Guest]: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
+    [UserRole.Bidder]: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+    [UserRole.Seller]:
+      'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200',
+    [UserRole.Admin]:
+      'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+  }
+
+  return roles[role]
+}
+
+export function formatDate(date: Date | undefined) {
+  if (!date) {
+    return ''
+  }
+  return date.toLocaleDateString('en-US', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
+export function isValidDate(date: Date | undefined) {
+  if (!date) {
+    return false
+  }
+  return !isNaN(date.getTime())
+}
+
+export const formatToYYYYMMDD = (date: Date) => {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
 }

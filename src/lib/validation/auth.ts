@@ -1,5 +1,7 @@
 import * as z from 'zod'
 
+import { UserRole } from '@/types/auth.types'
+
 export const loginSchema = z.object({
   email: z
     .string()
@@ -149,3 +151,36 @@ export type ChangeEmailRequestFormData = z.infer<typeof changeEmailRequestSchema
 export type ChangeEmailVerifyFormData = z.infer<typeof changeEmailVerifySchema>
 export type RequestForgetPasswordFormData = z.infer<typeof requestForgetPasswordSchema>
 export type VerifyForgetPasswordFormData = z.infer<typeof verifyForgetPassword>
+
+export const createUserSchema = registerRequestSchema
+  .omit({ recaptchaToken: true })
+  .extend({
+    role: z.nativeEnum(UserRole),
+  })
+
+export type CreateUserFormData = z.infer<typeof createUserSchema>
+
+// Edit user password is optional
+
+export const editUserSchema = registerRequestSchema
+  .omit({ recaptchaToken: true, password: true, confirmPassword: true })
+  .extend({
+    role: z.nativeEnum(UserRole),
+    password: z
+      .string()
+      .optional()
+      .refine(val => !val || val.length >= 8, {
+        message: 'Password must be at least 8 characters',
+      })
+      .refine(val => !val || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(val), {
+        message:
+          'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+      }),
+    confirmPassword: z.string().optional(),
+  })
+  .refine(data => !data.password || data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  })
+
+export type EditUserFormData = z.infer<typeof editUserSchema>

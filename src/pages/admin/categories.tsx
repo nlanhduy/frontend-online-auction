@@ -29,7 +29,7 @@ import { formatReadableDate } from '@/lib/utils'
 
 import type { Category } from '@/types/category.type'
 import type { CategoryFormData } from '@/lib/validation/category'
-export function CategoryManager() {
+export function AdminCategories() {
   const {
     categories,
     selectedCategoryId,

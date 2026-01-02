@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { CalendarIcon, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import ReCAPTCHA from 'react-google-recaptcha'
 import { Controller, useForm } from 'react-hook-form'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
@@ -26,7 +26,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Textarea } from '@/components/ui/textarea'
-import { handleApiError } from '@/lib/utils'
+import { formatDate, formatToYYYYMMDD, handleApiError, isValidDate } from '@/lib/utils'
 import { registerRequestSchema } from '@/lib/validation/auth'
 import { AuthAPI } from '@/services/api/auth.api'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -38,24 +38,6 @@ import { OTPVerificationModal } from './OTPVerificationModal'
 
 import type { RegisterRequestFormData } from '@/lib/validation/auth'
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY
-
-function formatDate(date: Date | undefined) {
-  if (!date) {
-    return ''
-  }
-  return date.toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  })
-}
-
-function isValidDate(date: Date | undefined) {
-  if (!date) {
-    return false
-  }
-  return !isNaN(date.getTime())
-}
 
 export function RegisterForm() {
   const [showOTPModal, setShowOTPModal] = useState(false)
@@ -190,9 +172,21 @@ export function RegisterForm() {
                 render={({ field, fieldState }) => {
                   const selectedDate = field.value ? new Date(field.value) : undefined
                   const [displayValue, setDisplayValue] = useState(
-                    formatDate(selectedDate),
+                    selectedDate ? formatDate(selectedDate) : '',
                   )
                   const [month, setMonth] = useState<Date | undefined>(selectedDate)
+                  const [datePickerOpen, setDatePickerOpen] = useState(false)
+
+                  useEffect(() => {
+                    if (field.value) {
+                      const date = new Date(field.value)
+                      setDisplayValue(formatDate(date))
+                      setMonth(date)
+                    } else {
+                      setDisplayValue('')
+                      setMonth(undefined)
+                    }
+                  }, [field.value])
 
                   return (
                     <Field data-invalid={fieldState.invalid}>
@@ -209,10 +203,13 @@ export function RegisterForm() {
                             const inputValue = e.target.value
                             setDisplayValue(inputValue)
 
-                            const date = new Date(inputValue)
-                            if (isValidDate(date)) {
-                              field.onChange(date.toISOString().split('T')[0])
-                              setMonth(date)
+                            const [y, m, d] = inputValue.split('-').map(Number)
+                            if (y && m && d) {
+                              const date = new Date(y, m - 1, d)
+                              if (!isNaN(date.getTime())) {
+                                setMonth(date)
+                                field.onChange(inputValue) // store as YYYY-MM-DD
+                              }
                             }
                           }}
                           onKeyDown={e => {
@@ -247,10 +244,10 @@ export function RegisterForm() {
                               toYear={new Date().getFullYear()}
                               onSelect={date => {
                                 if (date) {
-                                  const formattedDate = date.toISOString().split('T')[0]
-                                  field.onChange(formattedDate)
-                                  setDisplayValue(formatDate(date))
                                   setMonth(date)
+                                  const yyyyMMdd = formatToYYYYMMDD(date)
+                                  field.onChange(yyyyMMdd)
+                                  setDisplayValue(formatDate(date))
                                 }
                                 setDatePickerOpen(false)
                               }}

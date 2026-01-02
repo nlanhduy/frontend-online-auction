@@ -87,7 +87,7 @@ export function Layout() {
               <Package className='mr-2 h-4 w-4' />
               My active bids
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/bidder/won-auctions')}>
+            <DropdownMenuItem onClick={() => navigate('/bidder/auctions/won')}>
               <Gavel className='mr-2 h-4 w-4' />
               My won auctions
             </DropdownMenuItem>
@@ -107,7 +107,7 @@ export function Layout() {
               <FileText className='mr-2 h-4 w-4' />
               Watchlist
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/seller/completed-auctions')}>
+            <DropdownMenuItem onClick={() => navigate('/seller/auctions/completed')}>
               <Gavel className='mr-2 h-4 w-4' />
               Completed Auctions
             </DropdownMenuItem>

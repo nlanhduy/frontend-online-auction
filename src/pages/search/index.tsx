@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import { Filter, Search } from 'lucide-react'
+import { Filter, Search as SearchIcon } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
@@ -41,26 +41,8 @@ import { useQuery } from '@tanstack/react-query'
 import { ProductCard } from '../../components/ui/product-card'
 
 import type { SortOption } from '@/store/searchFilter'
-export function removeVietnameseDiacritics(str: string): string {
-  str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a')
-  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, 'e')
-  str = str.replace(/ì|í|ị|ỉ|ĩ/g, 'i')
-  str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o')
-  str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u')
-  str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, 'y')
-  str = str.replace(/đ/g, 'd')
-  str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, '')
-  str = str.replace(/\u02C6|\u0306|\u031B/g, '')
-  return str.toLowerCase()
-}
 
-export function searchMatch(text: string, query: string): boolean {
-  const normalizedText = removeVietnameseDiacritics(text)
-  const normalizedQuery = removeVietnameseDiacritics(query)
-  return normalizedText.includes(normalizedQuery)
-}
-
-export default function SearchPage() {
+export default function Search() {
   const [searchParams] = useSearchParams()
 
   const q = searchParams.get('q')
@@ -148,7 +130,7 @@ export default function SearchPage() {
             {/* Main Search Bar */}
             <div className='flex gap-2'>
               <div className='relative flex-1'>
-                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5' />
+                <SearchIcon className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5' />
                 <Input
                   type='text'
                   placeholder='Search products...'

@@ -18,6 +18,7 @@ export interface User {
   positiveRating: number
   negativeRating: number
   profilePicture?: string
+  sellerExpiration?: string
 }
 
 export interface AuthTokens {

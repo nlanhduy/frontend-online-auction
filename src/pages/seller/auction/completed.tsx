@@ -1,9 +1,9 @@
+import { PlusIcon, Star } from 'lucide-react'
 /* eslint-disable @typescript-eslint/no-explicit-any */
-'use client'
-import { Heart, Loader2, Trash2 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
 import {
   Pagination,
   PaginationContent,
@@ -16,29 +16,26 @@ import {
 import { ProductCard } from '@/components/ui/product-card'
 import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
+import { useAuth } from '@/hooks/use-auth'
 import { usePagination } from '@/hooks/use-pagination'
-import { useRemoveFromWatchList } from '@/hooks/use-watchlist'
 import { getPageNumbers } from '@/lib/utils'
-import { ProductAPI } from '@/services/api/product.api'
+import { AuthAPI } from '@/services/api/auth.api'
 import { useQuery } from '@tanstack/react-query'
 
 import type { Action } from '@/components/ui/action-menu'
-export default function WatchListPage() {
-  const removeFromWatchList = useRemoveFromWatchList()
-
+function SellerCompletedAuctions() {
+  const navigate = useNavigate()
+  const { user } = useAuth()
   const { currentPage, pageSize, goToPage, nextPage, previousPage, getPaginationInfo } =
     usePagination({
       initialPage: 1,
       initialPageSize: 8,
       scrollToTop: true,
     })
-  const handleRemoveFromWatchList = (productId: string) => {
-    removeFromWatchList.mutate(productId ?? '')
-  }
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: [QUERY_KEYS.watchList.all, currentPage, pageSize],
+  const productQuery = useQuery({
+    queryKey: [QUERY_KEYS.user.myCompletedAuctions(user?.id), currentPage, pageSize],
     queryFn: () =>
-      ProductAPI.getWatchList({
+      AuthAPI.getSellerCopletedSales({
         options: {
           params: {
             page: currentPage,
@@ -49,86 +46,76 @@ export default function WatchListPage() {
     staleTime: 1000 * 60 * 5,
   })
 
-  const allProducts = data?.data.favorites || []
-
-  const serverPaginationData = data?.data
+  const allProducts = productQuery?.data?.data.items || []
+  const serverPaginationData = productQuery.data
     ? {
         items: allProducts,
-        total: data?.data.total,
+        total: productQuery?.data.data.total,
         page: currentPage,
         limit: pageSize,
-        totalPages: data.data.totalPages,
-        hasNext: data.data.hasNext,
-        hasPrevious: data.data.hasPrevious,
+        totalPages: productQuery?.data.data.totalPages,
+        hasNext: productQuery?.data.data.hasNext,
+        hasPrevious: productQuery.data.data.hasPrevious,
       }
     : null
-
   const paginationInfo = getPaginationInfo(serverPaginationData)
   const { totalPages } = paginationInfo
 
-  return (
-    <div className=''>
-      {/* Header */}
-      <div className='bg-linear-to-r from-pink-50 to-red-50 py-8 mb-8'>
-        <div className='container mx-auto'>
-          <div className='flex items-center gap-3 mb-2'>
-            <Heart className='w-8 h-8 text-red-500 fill-red-500' />
-            <h1 className='text-3xl font-bold text-gray-900'>My Watch List</h1>
-          </div>
-          <p className='text-gray-600'>
-            {isLoading ? (
-              <Button disabled size='lg'>
-                <Spinner />
-                Loading watchlist...
-              </Button>
-            ) : (
-              <>
-                You have {serverPaginationData?.total} product
-                {serverPaginationData?.total !== 1 ? 's' : ''} in your watch list
-              </>
-            )}
-          </p>
-        </div>
-      </div>
+  const getActions = (product: any): Action[] => [
+    {
+      label: 'Rate & Review Product',
+      action: () => {
+        navigate(`/seller/auctions/completed/${product.id}/rating`)
+      },
+      icon: <Star />,
+    },
+  ]
 
+  return (
+    <>
       {/* Products Grid */}
-      <div className='container mx-auto'>
-        {isLoading ? (
+      <div className='container mx-auto py-12'>
+        {productQuery.isPending ? (
           <div className='text-center py-12'>
-            <Loader2 className='w-8 h-8 animate-spin mx-auto mb-4 text-gray-400' />
-            <p className='text-gray-500 text-lg'>
-              <Button disabled size='lg'>
-                <Spinner />
-                Loading watchlist...
-              </Button>
-            </p>
+            <Button disabled size='lg'>
+              <Spinner />
+              Loading products...
+            </Button>
           </div>
-        ) : isError ? (
+        ) : productQuery.isError ? (
           <div className='text-center py-12'>
             <p className='text-red-500 text-lg mb-4'>
-              Error loading watch list: {error?.message || 'Unknown error'}
+              Error loading products: {productQuery.error?.message || 'Unknown error'}
             </p>
             <Button onClick={() => window.location.reload()}>Retry</Button>
           </div>
         ) : allProducts.length > 0 ? (
           <>
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
-              {allProducts.map((product: any) => {
-                const actions: Action[] = [
-                  {
-                    label: 'Remove from watch list',
-                    action: () => handleRemoveFromWatchList(product.id),
-                    icon: <Trash2 />,
-                  },
-                ]
-
-                return (
-                  <ProductCard key={product.id} product={product} actions={actions} />
-                )
-              })}
+            <div className='flex w-full mb-8'>
+              {/* Create product button */}
+              <Button
+                onClick={() => navigate('/seller/products/new')}
+                className='flex items-center ml-auto gap-2'>
+                <PlusIcon className='w-4 h-4' />
+                Create Product
+              </Button>
+            </div>
+            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 relative'>
+              {/* Overlay when fetching */}
+              {productQuery.isFetching && (
+                <div className='absolute inset-0 bg-white/50 z-10 flex items-center justify-center'>
+                  <Spinner />
+                </div>
+              )}
+              {allProducts.map((product: any) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  actions={getActions(product)}
+                />
+              ))}
             </div>
 
-            {/* Pagination Controls */}
             {totalPages > 1 && (
               <div className='mt-12'>
                 <Pagination>
@@ -182,19 +169,20 @@ export default function WatchListPage() {
             </div>
           </>
         ) : (
-          <div className='text-center py-12'>
-            <Heart className='w-16 h-16 mx-auto mb-4 text-gray-300' />
-            <p className='text-gray-500 text-lg mb-4'>Your watch list is empty</p>
-            <p className='text-gray-400 mb-6'>
-              Start adding products to your watch list to keep track of items you&apos;re
-              interested in
-            </p>
-            <Link to='/search'>
-              <Button>Browse Products</Button>
-            </Link>
+          <div className='h-full py-12'>
+            <EmptyState
+              title='No Completed Auctions'
+              description='You have not completed any auctions yet.'
+              button1={{
+                label: 'Browse All Products',
+                href: '/search',
+              }}
+            />
           </div>
         )}
       </div>
-    </div>
+    </>
   )
 }
+
+export default SellerCompletedAuctions

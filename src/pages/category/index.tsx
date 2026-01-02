@@ -39,7 +39,7 @@ import {
 import { useQuery } from '@tanstack/react-query'
 
 import type { SortOption } from '@/store/searchFilter'
-export default function CategoryPage() {
+export default function Categories() {
   const { categoryId } = useParams<{ categoryId: string }>()
   const { searchQuery, searchType, sortBy, setFilters } = useFilterStore()
 

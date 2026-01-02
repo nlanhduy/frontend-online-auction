@@ -1,7 +1,19 @@
-import { PlusIcon, Star } from 'lucide-react'
+import { BookIcon, PlusIcon, Trash } from 'lucide-react'
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import {
@@ -18,24 +30,32 @@ import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
 import { useAuth } from '@/hooks/use-auth'
 import { usePagination } from '@/hooks/use-pagination'
-import { getPageNumbers } from '@/lib/utils'
+import { getPageNumbers, handleApiError } from '@/lib/utils'
 import { AuthAPI } from '@/services/api/auth.api'
-import { useQuery } from '@tanstack/react-query'
+import { ProductAPI } from '@/services/api/product.api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { Action } from '@/components/ui/action-menu'
-function CompletedAuctionsPage() {
-  const navigate = useNavigate()
+function SellerProducts() {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [productToDelete, setProductToDelete] = useState<{
+    id: string
+    name: string
+  } | null>(null)
+
   const { user } = useAuth()
+  const navigate = useNavigate()
   const { currentPage, pageSize, goToPage, nextPage, previousPage, getPaginationInfo } =
     usePagination({
       initialPage: 1,
       initialPageSize: 8,
       scrollToTop: true,
     })
+  const queryClient = useQueryClient()
   const productQuery = useQuery({
-    queryKey: [QUERY_KEYS.user.myCompletedAuctions(user?.id), currentPage, pageSize],
+    queryKey: [QUERY_KEYS.user.myProducts(user?.id), currentPage, pageSize],
     queryFn: () =>
-      AuthAPI.getSellerCopletedSales({
+      AuthAPI.getMyProducts({
         options: {
           params: {
             page: currentPage,
@@ -44,6 +64,24 @@ function CompletedAuctionsPage() {
         },
       }),
     staleTime: 1000 * 60 * 5,
+  })
+
+  const deleteProductMutation = useMutation({
+    mutationFn: (id: string) =>
+      ProductAPI.deleteProduct({ variables: { productId: id } }),
+    onSuccess: () => {
+      toast.success('Product deleted successfully')
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.user.myProducts(user?.id)],
+        exact: false,
+      })
+      setDeleteDialogOpen(false)
+      setProductToDelete(null)
+    },
+    onError: err => {
+      handleApiError(err)
+      setDeleteDialogOpen(false)
+    },
   })
 
   const allProducts = productQuery?.data?.data.items || []
@@ -61,18 +99,65 @@ function CompletedAuctionsPage() {
   const paginationInfo = getPaginationInfo(serverPaginationData)
   const { totalPages } = paginationInfo
 
+  const handleDeleteClick = (product: any) => {
+    setProductToDelete({ id: product.id, name: product.name || 'this product' })
+    setDeleteDialogOpen(true)
+  }
+
+  const handleConfirmDelete = () => {
+    if (productToDelete) {
+      deleteProductMutation.mutate(productToDelete.id)
+    }
+  }
+
   const getActions = (product: any): Action[] => [
     {
-      label: 'Rate & Review Product',
+      label: 'Delete',
+      action: () => handleDeleteClick(product),
+      icon: <Trash />,
+    },
+    {
+      label: 'Add description',
       action: () => {
-        navigate(`/seller/completed-auctions/${product.id}/rating`)
+        navigate(`/seller/products/${product.id}/edit`)
       },
-      icon: <Star />,
+      icon: <BookIcon />,
     },
   ]
 
   return (
     <>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete{' '}
+              <span className='font-semibold'>{productToDelete?.name}</span> and remove it
+              from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteProductMutation.isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={deleteProductMutation.isPending}
+              className='bg-red-600 hover:bg-red-700'>
+              {deleteProductMutation.isPending ? (
+                <>
+                  <Spinner />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Products Grid */}
       <div className='container mx-auto py-12'>
         {productQuery.isPending ? (
@@ -171,8 +256,8 @@ function CompletedAuctionsPage() {
         ) : (
           <div className='h-full py-12'>
             <EmptyState
-              title='No Completed Auctions'
-              description='You have not completed any auctions yet.'
+              title='You don’t have any products yet'
+              description='You can create a new product by clicking the button below.'
               button1={{
                 label: 'Browse All Products',
                 href: '/search',
@@ -185,4 +270,4 @@ function CompletedAuctionsPage() {
   )
 }
 
-export default CompletedAuctionsPage
+export default SellerProducts

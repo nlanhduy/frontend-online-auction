@@ -57,7 +57,7 @@ function FormFieldWrapper({
 }
 
 // Main Component
-export default function CreateProductPage() {
+export default function SellerCreateProduct() {
   const [isUploading, setIsUploading] = useState(false)
   const { user } = useAuth()
   const [isMainImageUploading, setIsMainImageUploading] = useState(false)

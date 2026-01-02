@@ -43,7 +43,8 @@ import type {
   ChangeFullNameFormData,
   ChangePasswordFormData,
 } from '@/lib/validation/setting'
-export function SettingsPage() {
+
+export function Setting() {
   const [showOTPModal, setShowOTPModal] = useState(false)
   const [pendingEmail, setPendingEmail] = useState('')
 

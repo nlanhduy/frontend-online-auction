@@ -45,7 +45,7 @@ import { AuthAPI } from '@/services/api/auth.api'
 import { UserRole } from '@/types/auth.types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-function RequestToSellerList() {
+function AdminRequestToSeller() {
   const { user, isAuthenticated } = useAuth()
   const [dialogState, setDialogState] = useState<{
     isOpen: boolean
@@ -362,4 +362,4 @@ function RequestToSellerList() {
   )
 }
 
-export default RequestToSellerList
+export default AdminRequestToSeller

@@ -13,7 +13,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import type { RatingData } from '@/types/rating.type'
 
-function RatingPage() {
+function Rating() {
   const { user, isAuthenticated } = useAuth()
 
   const ratingQuery = useQuery<RatingData>({
@@ -212,4 +212,4 @@ function RatingPage() {
   )
 }
 
-export default RatingPage
+export default Rating

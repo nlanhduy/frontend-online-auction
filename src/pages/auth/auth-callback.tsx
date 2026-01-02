@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card'
 import { useGoogleAuth } from '@/hooks/use-google-oauth'
 
-export function AuthCallbackPage() {
+export function AuthCallback() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { mutate: authenticateWithGoogle } = useGoogleAuth()
