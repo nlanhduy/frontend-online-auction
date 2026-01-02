@@ -15,7 +15,7 @@ import { ProductAPI } from '@/services/api/product.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { Product } from '@/types/product.type'
-const EditProductPage = () => {
+const SellerProductEdit = () => {
   const { id: productId } = useParams<{ id: string }>()
   const [newDescription, setNewDescription] = useState('')
 
@@ -140,4 +140,4 @@ const EditProductPage = () => {
   )
 }
 
-export default EditProductPage
+export default SellerProductEdit

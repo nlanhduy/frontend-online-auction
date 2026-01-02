@@ -27,7 +27,7 @@ import type {
   RequestForgetPasswordFormData,
   VerifyForgetPasswordFormData,
 } from '@/lib/validation/auth'
-function ForgotPasswordPage() {
+function ForgotPassword() {
   const navigate = useNavigate()
   const [showOTPModal, setShowOTPModal] = useState(false)
 
@@ -227,4 +227,4 @@ function ForgotPasswordPage() {
   )
 }
 
-export default ForgotPasswordPage
+export default ForgotPassword

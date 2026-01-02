@@ -17,7 +17,7 @@ import { ProductAPI } from '@/services/api/product.api'
 import { useMutation, useQuery } from '@tanstack/react-query'
 
 import type { Product, ProductPermission } from '@/types/product.type'
-const RatingCompletedAuctionPage = () => {
+const SellerAuctionRating = () => {
   const { id: productId } = useParams<{ id: string }>()
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -263,4 +263,4 @@ const RatingCompletedAuctionPage = () => {
   )
 }
 
-export default RatingCompletedAuctionPage
+export default SellerAuctionRating

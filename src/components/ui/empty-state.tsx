@@ -22,7 +22,7 @@ interface EmptyStateProps {
   description?: string
   icon?: ReactNode
 
-  button1: ActionButton
+  button1?: ActionButton
   button2?: ActionButton
 
   learnMoreHref?: string
@@ -48,9 +48,11 @@ export function EmptyState({
 
       <EmptyContent>
         <div className='flex gap-2'>
-          <Button asChild>
-            <a href={button1.href}>{button1.label}</a>
-          </Button>
+          {button1 && (
+            <Button asChild>
+              <a href={button1.href}>{button1.label}</a>
+            </Button>
+          )}
 
           {button2 && (
             <Button variant='outline' asChild>

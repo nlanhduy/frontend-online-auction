@@ -216,4 +216,45 @@ export const AuthAPI = {
       ...options,
     })
   },
+
+  getAllUsers({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'get',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users`,
+      ...options,
+    })
+  },
+  deleteUser({ options, variables }: APIParams): ApiResponse {
+    return request({
+      method: 'delete',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/${variables.userId}`,
+      ...options,
+    })
+  },
+  getUserById({ options, variables }: APIParams): ApiResponse {
+    return request({
+      method: 'get',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/${variables.userId}`,
+      ...options,
+    })
+  },
+  createUser({ options }: APIParams): ApiResponse {
+    return request({
+      method: 'post',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users`,
+      ...options,
+    })
+  },
+  updateUser({ options, variables }: APIParams): ApiResponse {
+    return request({
+      method: 'patch',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/${variables.userId}`,
+      ...options,
+    })
+  },
 }

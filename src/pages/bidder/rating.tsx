@@ -15,7 +15,7 @@ import { ProductAPI } from '@/services/api/product.api'
 import { useMutation, useQuery } from '@tanstack/react-query'
 
 import type { Product } from '@/types/product.type'
-const RatingWonAuctionPage = () => {
+const RatingWonAuction = () => {
   const { id: productId } = useParams<{ id: string }>()
   const navigate = useNavigate()
 
@@ -213,4 +213,4 @@ const RatingWonAuctionPage = () => {
   )
 }
 
-export default RatingWonAuctionPage
+export default RatingWonAuction

@@ -36,7 +36,7 @@ import { ProductAPI } from '@/services/api/product.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { Action } from '@/components/ui/action-menu'
-function SellerProductsPage() {
+function SellerProducts() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<{
     id: string
@@ -270,4 +270,4 @@ function SellerProductsPage() {
   )
 }
 
-export default SellerProductsPage
+export default SellerProducts

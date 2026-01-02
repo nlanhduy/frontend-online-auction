@@ -23,7 +23,7 @@ import { AuthAPI } from '@/services/api/auth.api'
 import { useQuery } from '@tanstack/react-query'
 
 import type { Action } from '@/components/ui/action-menu'
-function CompletedAuctionsPage() {
+function SellerCompletedAuctions() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { currentPage, pageSize, goToPage, nextPage, previousPage, getPaginationInfo } =
@@ -77,7 +77,7 @@ function CompletedAuctionsPage() {
     actions.push({
       label: 'Rate & Review Product',
       action: () => {
-        navigate(`/seller/completed-auctions/${product.id}/rating`)
+        navigate(`/seller/auctions/completed/${product.id}/rating`)
       },
       icon: <Star />,
     })
@@ -198,4 +198,4 @@ function CompletedAuctionsPage() {
   )
 }
 
-export default CompletedAuctionsPage
+export default SellerCompletedAuctions

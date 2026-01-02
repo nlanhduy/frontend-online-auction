@@ -15,6 +15,10 @@ export interface User {
   avatar?: string
   rating?: number
   createdAt: string
+  positiveRating: number
+  negativeRating: number
+  profilePicture?: string
+  sellerExpiration?: string
 }
 
 export interface AuthTokens {
@@ -25,6 +29,7 @@ export interface AuthTokens {
 export interface LoginResponse {
   user: User
   accessToken: string
+
   // refreshToken is set in cookie by backend
 }
 

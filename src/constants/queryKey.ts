@@ -10,17 +10,19 @@ export const QUERY_KEYS = {
     refresh: ['auth', 'refresh'] as const,
     logout: ['auth', 'logout'] as const,
     me: ['auth', 'me'] as const,
+    googleLogin: ['auth', 'google-login'] as const,
   },
 
   user: {
     profile: (userId: string) => ['user', 'profile', userId] as const,
     all: ['user', 'all'] as const,
     myProducts: (userId?: string) => ['user', 'my-products', userId] as const,
-    myActiveBids: (userId?: string) => ['user', 'my-active-bids', userId] as const,
-    wonAuctions: (userId?: string) => ['user', 'won-auctions', userId] as const,
+    myActiveBids: (userId?: string) => ['user', 'active-bids', userId] as const,
+    wonAuctions: (userId?: string) => ['user', 'auctions', 'won', userId] as const,
     myCompletedAuctions: (userId?: string) =>
-      ['user', 'my-completed-auctions', userId] as const,
+      ['user', 'auctions', 'completed', userId] as const,
     myRating: (userId?: string) => ['user', 'my-rating', userId] as const,
+    detail: (userId: string) => ['user', 'detail', userId] as const,
   },
 
   // Products related
@@ -31,6 +33,8 @@ export const QUERY_KEYS = {
     all: ['products', 'all'] as const,
     permission: ({ productId, userId }: { userId?: string; productId?: string }) =>
       ['products', 'permission', productId, userId] as const,
+    bidHistory: (productId: string) => ['products', 'bid-history', productId] as const,
+    related: (productId: string) => ['products', 'related', productId] as const,
   },
 
   categories: {

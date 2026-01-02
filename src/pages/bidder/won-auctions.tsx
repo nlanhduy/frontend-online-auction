@@ -1,6 +1,7 @@
-import { BrushCleaning } from 'lucide-react'
-
+import { Star } from 'lucide-react'
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useNavigate } from 'react-router-dom'
+
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
 import {
@@ -21,8 +22,10 @@ import { getPageNumbers } from '@/lib/utils'
 import { AuthAPI } from '@/services/api/auth.api'
 import { useQuery } from '@tanstack/react-query'
 
-function ActiveBidsPage() {
+import type { Action } from '@/components/ui/action-menu'
+function BidderWonAuctions() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const { currentPage, pageSize, goToPage, nextPage, previousPage, getPaginationInfo } =
     usePagination({
       initialPage: 1,
@@ -30,9 +33,9 @@ function ActiveBidsPage() {
       scrollToTop: true,
     })
   const productQuery = useQuery({
-    queryKey: [QUERY_KEYS.user.myActiveBids(user?.id), currentPage, pageSize],
+    queryKey: [QUERY_KEYS.user.wonAuctions(user?.id), currentPage, pageSize],
     queryFn: () =>
-      AuthAPI.getBidderActiveBids({
+      AuthAPI.getBidderWonAuctions({
         options: {
           params: {
             page: currentPage,
@@ -43,8 +46,7 @@ function ActiveBidsPage() {
     staleTime: 1000 * 60 * 5,
   })
 
-  const allProducts =
-    productQuery?.data?.data.items.map((product: any) => product.product) || []
+  const allProducts = productQuery?.data?.data.items || []
   const serverPaginationData = productQuery.data
     ? {
         items: allProducts,
@@ -58,6 +60,16 @@ function ActiveBidsPage() {
     : null
   const paginationInfo = getPaginationInfo(serverPaginationData)
   const { totalPages } = paginationInfo
+
+  const getActions = (product: any): Action[] => [
+    {
+      label: 'Rate & Review Product',
+      action: () => {
+        navigate(`/bidder/auctions/won/${product.id}/rating`)
+      },
+      icon: <Star />,
+    },
+  ]
 
   return (
     <>
@@ -87,7 +99,11 @@ function ActiveBidsPage() {
                 </div>
               )}
               {allProducts.map((product: any) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  actions={getActions(product)}
+                />
               ))}
             </div>
 
@@ -146,9 +162,8 @@ function ActiveBidsPage() {
         ) : (
           <div className='h-full py-12'>
             <EmptyState
-              icon={<BrushCleaning />}
-              title='No active bids found'
-              description='You don’t have any ongoing bids right now.'
+              title='You haven’t won any auctions yet.'
+              description='Browse all products on the marketplace.'
               button1={{
                 label: 'Browse All Products',
                 href: '/search',
@@ -161,4 +176,4 @@ function ActiveBidsPage() {
   )
 }
 
-export default ActiveBidsPage
+export default BidderWonAuctions

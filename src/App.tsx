@@ -1,35 +1,40 @@
+import { Search } from 'lucide-react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { GuestRoute } from '@/components/auth/GuestRoute'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 import { Layout } from './components/layout/Layout'
-import { CategoryManager } from './pages/admin/category/CategoryManagementPage'
-import ProductManageMentPage from './pages/admin/product/ProductManagementPage'
-import RequestToSellerList from './pages/admin/request-to-sellers/RequestToSellerPage'
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
-import LoginPage from './pages/auth/LoginPage'
-import RegisterPage from './pages/auth/RegisterPage'
-import ActiveBidsPage from './pages/bidder/ActiveBidsPage'
-import RatingWonAuctionPage from './pages/bidder/RatingWonAuctionPage'
-import WonAuctionsPage from './pages/bidder/WonAuctionsPage'
-import CategoryPage from './pages/category/CategoryPage'
-import Homepage from './pages/homepage/Homepage'
 import OrderFulfillmentPage from './pages/order/OrderFulfillmentPage'
 import PaymentCancelPage from './pages/order/PaymentCancelPage'
 import PaymentSuccessPage from './pages/order/PaymentSuccessPage'
 import ProductDetail from './pages/product/ProductDetailPage'
-import RatingPage from './pages/rating/RatingPage'
-import SearchPage from './pages/search/SearchPage'
-import CompletedAuctionsPage from './pages/seller/auction/CompletedAuctionsPage'
-import RatingCompletedAuctionPage from './pages/seller/auction/RatingCompletedAuctionPage'
-import CreateProductPage from './pages/seller/product/CreateProductPage'
-import EditProductPage from './pages/seller/product/EditProductPage'
-import SellerProductsPage from './pages/seller/product/SellerProductsPage'
-import { SettingsPage } from './pages/setting/SettingPage'
 import PaymentDemoPage from './pages/test/PaymentDemoPage'
 import PaymentTestPage from './pages/test/PaymentTestPage'
-import WatchListPage from './pages/watchList/WatchListPage'
+import { AdminCategories } from './pages/admin/categories'
+import AdminProducts from './pages/admin/products'
+import AdminRequestToSeller from './pages/admin/request-to-seller'
+import { AdminUsers } from './pages/admin/users'
+import { AdminCreateUser } from './pages/admin/users/create'
+import { AdminUserDetail } from './pages/admin/users/detail'
+import { AdminEditUser } from './pages/admin/users/edit'
+import { AuthCallback } from './pages/auth/auth-callback'
+import ForgotPassword from './pages/auth/forgot-password'
+import Login from './pages/auth/login'
+import Register from './pages/auth/register'
+import ActiveBids from './pages/bidder/active-bids'
+import RatingWonAuction from './pages/bidder/rating'
+import WonAuctions from './pages/bidder/won-auctions'
+import Category from './pages/category'
+import Homepage from './pages/homepage'
+import Rating from './pages/rating'
+import SellerCompletedAuctions from './pages/seller/auction/completed'
+import SellerAuctionRating from './pages/seller/auction/rating'
+import SellerProducts from './pages/seller/product'
+import SellerCreateProduct from './pages/seller/product/create'
+import SellerProductEdit from './pages/seller/product/edit'
+import { Setting } from './pages/setting'
+import WatchList from './pages/watchList'
 import { UserRole } from './types/auth.types'
 import { SellerOrderConfirmationPage } from './pages/seller/order/SellerOrderConfirmationPage'
 
@@ -40,7 +45,7 @@ function App() {
         path='/login'
         element={
           <GuestRoute>
-            <LoginPage />
+            <Login />
           </GuestRoute>
         }
       />
@@ -48,7 +53,7 @@ function App() {
         path='/register'
         element={
           <GuestRoute>
-            <RegisterPage />
+            <Register />
           </GuestRoute>
         }
       />
@@ -57,7 +62,16 @@ function App() {
         path='/forgot-password'
         element={
           <GuestRoute>
-            <ForgotPasswordPage />
+            <ForgotPassword />
+          </GuestRoute>
+        }
+      />
+
+      <Route
+        path='/auth/callback'
+        element={
+          <GuestRoute>
+            <AuthCallback />
           </GuestRoute>
         }
       />
@@ -65,8 +79,8 @@ function App() {
       {/* Public Routes with appropriate layout */}
       <Route element={<Layout />}>
         <Route path='/' element={<Homepage />} />
-        <Route path='/category/:categoryId' element={<CategoryPage />} />
-        <Route path='/search' element={<SearchPage />} />
+        <Route path='/category/:categoryId' element={<Category />} />
+        <Route path='/search' element={<Search />} />
         <Route path='/product/:productId' element={<ProductDetail />} />
 
         {/* Payment Routes */}
@@ -107,7 +121,7 @@ function App() {
           element={
             <ProtectedRoute
               allowedRoles={[UserRole.Bidder, UserRole.Seller, UserRole.Admin]}>
-              <RatingPage />
+              <Rating />
             </ProtectedRoute>
           }
         />
@@ -115,7 +129,7 @@ function App() {
           path='watchlist'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Bidder, UserRole.Seller]}>
-              <WatchListPage />
+              <WatchList />
             </ProtectedRoute>
           }
         />
@@ -123,23 +137,23 @@ function App() {
           path='bidder/active-bids'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Bidder]}>
-              <ActiveBidsPage />
+              <ActiveBids />
             </ProtectedRoute>
           }
         />
         <Route
-          path='bidder/won-auctions'
+          path='bidder/auctions/won'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Bidder]}>
-              <WonAuctionsPage />
+              <WonAuctions />
             </ProtectedRoute>
           }
         />
         <Route
-          path='bidder/won-auctions/:id/rating'
+          path='bidder/auctions/won/:id/rating'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Bidder]}>
-              <RatingWonAuctionPage />
+              <RatingWonAuction />
             </ProtectedRoute>
           }
         />
@@ -149,7 +163,7 @@ function App() {
           element={
             <ProtectedRoute
               allowedRoles={[UserRole.Bidder, UserRole.Seller, UserRole.Admin]}>
-              <SettingsPage />
+              <Setting />
             </ProtectedRoute>
           }
         />
@@ -159,7 +173,7 @@ function App() {
           path='seller/products/new'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Seller]}>
-              <CreateProductPage />
+              <SellerCreateProduct />
             </ProtectedRoute>
           }
         />
@@ -167,7 +181,7 @@ function App() {
           path='seller/products'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Seller]}>
-              <SellerProductsPage />
+              <SellerProducts />
             </ProtectedRoute>
           }
         />
@@ -175,24 +189,24 @@ function App() {
           path='seller/products/:id/edit'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Seller]}>
-              <EditProductPage />
+              <SellerProductEdit />
             </ProtectedRoute>
           }
         />
         <Route
-          path='seller/completed-auctions'
+          path='seller/auctions/completed'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Seller]}>
-              <CompletedAuctionsPage />
+              <SellerCompletedAuctions />
             </ProtectedRoute>
           }
         />
 
         <Route
-          path='seller/completed-auctions/:id/rating'
+          path='seller/auctions/completed/:id/rating'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Seller]}>
-              <RatingCompletedAuctionPage />
+              <SellerAuctionRating />
             </ProtectedRoute>
           }
         />
@@ -219,7 +233,7 @@ function App() {
           path='admin/products'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Admin]}>
-              <ProductManageMentPage />
+              <AdminProducts />
             </ProtectedRoute>
           }
         />
@@ -227,7 +241,7 @@ function App() {
           path='admin/categories'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Admin]}>
-              <CategoryManager />
+              <AdminCategories />
             </ProtectedRoute>
           }
         />
@@ -235,15 +249,18 @@ function App() {
           path='admin/users'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Admin]}>
-              {/* <AdminUsersPage /> */}
+              <AdminUsers />
             </ProtectedRoute>
           }
         />
+        <Route path='admin/users/:id' element={<AdminUserDetail />} />
+        <Route path='admin/users/:id/edit' element={<AdminEditUser />} />
+        <Route path='admin/users/create' element={<AdminCreateUser />} />
         <Route
           path='admin/seller-requests'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Admin]}>
-              <RequestToSellerList />
+              <AdminRequestToSeller />
             </ProtectedRoute>
           }
         />
@@ -251,7 +268,7 @@ function App() {
           path='admin/settings'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Admin]}>
-              {/* <AdminSettingsPage /> */}
+              {/* <AdminSettings /> */}
             </ProtectedRoute>
           }
         />

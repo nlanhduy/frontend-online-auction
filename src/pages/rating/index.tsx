@@ -13,7 +13,7 @@ import { useQuery } from '@tanstack/react-query'
 
 import type { RatingData } from '@/types/rating.type'
 
-function RatingPage() {
+function Rating() {
   const { user, isAuthenticated } = useAuth()
 
   const ratingQuery = useQuery<RatingData>({
@@ -169,7 +169,7 @@ function RatingPage() {
                   <div className='flex items-center gap-3'>
                     <Avatar className='h-10 w-10'>
                       <AvatarImage
-                        src={rating.giver.avatar}
+                        src={rating.giver.avatar || rating.giver.profilePicture}
                         alt={rating.giver.fullName}
                       />
                       <AvatarFallback>{rating.giver.fullName.charAt(0)}</AvatarFallback>
@@ -212,4 +212,4 @@ function RatingPage() {
   )
 }
 
-export default RatingPage
+export default Rating
