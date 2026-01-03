@@ -37,7 +37,6 @@ export const useLogin = () => {
     onSuccess: (data: any) => {
       if (data.user && data.accessToken) {
         setAuth(data.user, data.accessToken)
-        console.log({ data })
 
         toast.success('Login successful!', {
           description: 'Welcome back to AuctionHub',

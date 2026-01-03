@@ -73,4 +73,10 @@ export const QUERY_KEYS = {
 
   chat: (orderId: string) => ['chat', orderId] as const,
   messages: (orderId: string) => ['chat', orderId, 'messages'] as const,
+
+  admin: {
+    stats: ['admin', 'dashboard', 'stats'] as const,
+    userGrowth: ['admin', 'dashboard', 'user-growth'] as const,
+    auctionsStats: ['admin', 'dashboard', 'auctions-stats'] as const,
+  },
 } as const

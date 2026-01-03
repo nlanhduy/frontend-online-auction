@@ -123,7 +123,7 @@ export function Layout() {
           <>
             {commonItems}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate('/admin/dashboard')}>
+            <DropdownMenuItem onClick={() => navigate('/admin')}>
               <LayoutDashboard className='mr-2 h-4 w-4' />
               Dashboard
             </DropdownMenuItem>
