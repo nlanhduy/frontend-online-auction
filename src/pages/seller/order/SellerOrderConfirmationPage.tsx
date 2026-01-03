@@ -79,7 +79,7 @@ export function SellerOrderConfirmationPage() {
 
   const handleConfirmShipment = async () => {
     if (!trackingNumber || !shippingCarrier) {
-      alert('Vui lòng nhập đầy đủ thông tin vận chuyển')
+      alert('Please enter complete shipping information')
       return
     }
 
@@ -96,7 +96,7 @@ export function SellerOrderConfirmationPage() {
 
   const handleCancelOrder = async () => {
     if (!cancellationReason.trim()) {
-      alert('Vui lòng nhập lý do hủy đơn')
+      alert('Please enter cancellation reason')
       return
     }
 
@@ -111,7 +111,7 @@ export function SellerOrderConfirmationPage() {
       navigate('/seller/completed-auctions')
     } catch (error) {
       console.error('Error canceling order:', error)
-      alert('Không thể hủy đơn hàng')
+      alert('Cannot cancel order')
     }
   }
 
@@ -119,7 +119,7 @@ export function SellerOrderConfirmationPage() {
     return (
       <div className='container mx-auto py-12 text-center'>
         <Spinner />
-        <p className='mt-4'>Đang tải thông tin đơn hàng...</p>
+        <p className='mt-4'>Loading order information...</p>
       </div>
     )
   }
@@ -128,10 +128,10 @@ export function SellerOrderConfirmationPage() {
     return (
       <div className='container mx-auto py-12 text-center'>
         <AlertCircle className='w-16 h-16 mx-auto text-red-500 mb-4' />
-        <h2 className='text-2xl font-bold mb-2'>Không tìm thấy sản phẩm</h2>
+        <h2 className='text-2xl font-bold mb-2'>Product Not Found</h2>
         <p className='text-gray-600 mb-4'>Product ID: {productId}</p>
         <Button onClick={() => navigate('/seller/completed-auctions')}>
-          Quay lại danh sách
+          Back to List
         </Button>
       </div>
     )
@@ -141,21 +141,21 @@ export function SellerOrderConfirmationPage() {
     return (
       <div className='container mx-auto py-12 text-center'>
         <AlertCircle className='w-16 h-16 mx-auto text-yellow-500 mb-4' />
-        <h2 className='text-2xl font-bold mb-2'>Chưa có đơn hàng</h2>
+        <h2 className='text-2xl font-bold mb-2'>No Order Yet</h2>
         <p className='text-gray-600 mb-4'>
-          Đơn hàng chưa được tạo. Người mua có thể chưa thanh toán.
+          Order has not been created yet. Buyer may not have paid.
         </p>
         <div className='space-y-4'>
           <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto'>
             <p className='text-sm text-blue-800'>
-              <strong>Sản phẩm:</strong> {product.name}
+              <strong>Product:</strong> {product.name}
             </p>
             <p className='text-sm text-blue-800'>
-              <strong>Trạng thái:</strong> {product.status}
+              <strong>Status:</strong> {product.status}
             </p>
           </div>
           <Button onClick={() => navigate('/seller/completed-auctions')}>
-            Quay lại danh sách
+            Back to List
           </Button>
         </div>
       </div>
@@ -169,12 +169,10 @@ export function SellerOrderConfirmationPage() {
     <div className='container mx-auto py-12 max-w-4xl'>
       <div className='mb-8'>
         <Button variant='outline' onClick={() => navigate(-1)} className='mb-4'>
-          ← Quay lại
+          ← Back
         </Button>
-        <h1 className='text-3xl font-bold mb-2'>Xác nhận đơn hàng</h1>
-        <p className='text-gray-600'>
-          Xác nhận và gửi thông tin vận chuyển cho người mua
-        </p>
+        <h1 className='text-3xl font-bold mb-2'>Confirm Order</h1>
+        <p className='text-gray-600'>Confirm and send shipping information to buyer</p>
       </div>
 
       {/* Order Status Progress */}
@@ -185,7 +183,7 @@ export function SellerOrderConfirmationPage() {
       {/* Product Information */}
       <Card className='mb-6'>
         <CardHeader>
-          <CardTitle>Thông tin sản phẩm</CardTitle>
+          <CardTitle>Product Information</CardTitle>
         </CardHeader>
         <CardContent>
           <div className='flex gap-4'>
@@ -196,7 +194,7 @@ export function SellerOrderConfirmationPage() {
             />
             <div className='flex-1'>
               <h3 className='font-semibold text-lg'>{product.name}</h3>
-              <p className='text-gray-600'>Mã sản phẩm: {product.id}</p>
+              <p className='text-gray-600'>Product ID: {product.id}</p>
               <p className='text-green-600 font-bold mt-2'>${order.paymentAmount} USD</p>
             </div>
           </div>
@@ -206,11 +204,11 @@ export function SellerOrderConfirmationPage() {
       {/* Buyer Information */}
       <Card className='mb-6'>
         <CardHeader>
-          <CardTitle>Thông tin người mua</CardTitle>
+          <CardTitle>Buyer Information</CardTitle>
         </CardHeader>
         <CardContent className='space-y-2'>
           <div>
-            <span className='font-semibold'>Tên:</span> {order.buyer?.fullName || 'N/A'}
+            <span className='font-semibold'>Name:</span> {order.buyer?.fullName || 'N/A'}
           </div>
           <div>
             <span className='font-semibold'>Email:</span> {order.buyer?.email || 'N/A'}
@@ -218,22 +216,20 @@ export function SellerOrderConfirmationPage() {
           {order.shippingAddress && (
             <>
               <div>
-                <span className='font-semibold'>Địa chỉ:</span> {order.shippingAddress}
+                <span className='font-semibold'>Address:</span> {order.shippingAddress}
               </div>
               <div>
-                <span className='font-semibold'>Quận/Huyện:</span>{' '}
-                {order.shippingDistrict}
+                <span className='font-semibold'>District:</span> {order.shippingDistrict}
               </div>
               <div>
-                <span className='font-semibold'>Thành phố:</span> {order.shippingCity}
+                <span className='font-semibold'>City:</span> {order.shippingCity}
               </div>
               <div>
-                <span className='font-semibold'>Số điện thoại:</span>{' '}
-                {order.shippingPhone}
+                <span className='font-semibold'>Phone:</span> {order.shippingPhone}
               </div>
               {order.shippingNote && (
                 <div>
-                  <span className='font-semibold'>Ghi chú:</span> {order.shippingNote}
+                  <span className='font-semibold'>Note:</span> {order.shippingNote}
                 </div>
               )}
             </>
@@ -247,20 +243,18 @@ export function SellerOrderConfirmationPage() {
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
               <Truck className='w-5 h-5' />
-              Xác nhận giao hàng
+              Confirm Shipment
             </CardTitle>
-            <CardDescription>
-              Nhập thông tin vận chuyển để xác nhận đơn hàng
-            </CardDescription>
+            <CardDescription>Enter shipping information to confirm order</CardDescription>
           </CardHeader>
           <CardContent className='space-y-4'>
             <div>
               <Label htmlFor='carrier'>
-                Đơn vị vận chuyển <span className='text-red-500'>*</span>
+                Shipping Carrier <span className='text-red-500'>*</span>
               </Label>
               <Input
                 id='carrier'
-                placeholder='VD: Giao Hàng Nhanh, Viettel Post, J&T Express...'
+                placeholder='E.g.: Giao Hang Nhanh, Viettel Post, J&T Express...'
                 value={shippingCarrier}
                 onChange={e => setShippingCarrier(e.target.value)}
                 className='mt-1'
@@ -268,11 +262,11 @@ export function SellerOrderConfirmationPage() {
             </div>
             <div>
               <Label htmlFor='tracking'>
-                Mã vận đơn <span className='text-red-500'>*</span>
+                Tracking Number <span className='text-red-500'>*</span>
               </Label>
               <Input
                 id='tracking'
-                placeholder='Nhập mã vận đơn'
+                placeholder='Enter tracking number'
                 value={trackingNumber}
                 onChange={e => setTrackingNumber(e.target.value)}
                 className='mt-1'
@@ -290,12 +284,12 @@ export function SellerOrderConfirmationPage() {
                 {confirmShipmentMutation.isPending ? (
                   <>
                     <Spinner />
-                    Đang xác nhận...
+                    Confirming...
                   </>
                 ) : (
                   <>
                     <Package className='w-4 h-4 mr-2' />
-                    Xác nhận và gửi hàng
+                    Confirm and Ship
                   </>
                 )}
               </Button>
@@ -305,7 +299,7 @@ export function SellerOrderConfirmationPage() {
                 onClick={() => setShowCancelDialog(true)}
                 size='lg'>
                 <XCircle className='w-4 h-4 mr-2' />
-                Hủy đơn hàng
+                Cancel Order
               </Button>
             </div>
           </CardContent>
@@ -316,19 +310,19 @@ export function SellerOrderConfirmationPage() {
       {order.status === OrderStatus.IN_TRANSIT && (
         <Card className='mb-6 border-green-200 bg-green-50'>
           <CardHeader>
-            <CardTitle className='text-green-700'>✅ Đã xác nhận giao hàng</CardTitle>
+            <CardTitle className='text-green-700'>✅ Shipment Confirmed</CardTitle>
           </CardHeader>
           <CardContent className='space-y-2'>
             <div>
-              <span className='font-semibold'>Đơn vị vận chuyển:</span>{' '}
-              {order.shippingCarrier}
+              <span className='font-semibold'>Carrier:</span> {order.shippingCarrier}
             </div>
             <div>
-              <span className='font-semibold'>Mã vận đơn:</span> {order.trackingNumber}
+              <span className='font-semibold'>Tracking Number:</span>{' '}
+              {order.trackingNumber}
             </div>
             <div>
-              <span className='font-semibold'>Thời gian xác nhận:</span>{' '}
-              {new Date(order.sellerConfirmedAt!).toLocaleString('vi-VN')}
+              <span className='font-semibold'>Confirmation Time:</span>{' '}
+              {new Date(order.sellerConfirmedAt!).toLocaleString('en-US')}
             </div>
           </CardContent>
         </Card>
@@ -338,18 +332,18 @@ export function SellerOrderConfirmationPage() {
       <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Xác nhận hủy đơn hàng</AlertDialogTitle>
+            <AlertDialogTitle>Confirm Order Cancellation</AlertDialogTitle>
             <AlertDialogDescription>
-              Bạn có chắc chắn muốn hủy đơn hàng này? Hành động này không thể hoàn tác.
+              Are you sure you want to cancel this order? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className='my-4'>
             <Label htmlFor='reason'>
-              Lý do hủy đơn <span className='text-red-500'>*</span>
+              Cancellation Reason <span className='text-red-500'>*</span>
             </Label>
             <Textarea
               id='reason'
-              placeholder='Nhập lý do hủy đơn hàng...'
+              placeholder='Enter cancellation reason...'
               value={cancellationReason}
               onChange={e => setCancellationReason(e.target.value)}
               rows={4}
@@ -357,12 +351,12 @@ export function SellerOrderConfirmationPage() {
             />
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel>Không, quay lại</AlertDialogCancel>
+            <AlertDialogCancel>No, go back</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCancelOrder}
               disabled={!cancellationReason.trim()}
               className='bg-red-600 hover:bg-red-700'>
-              Có, hủy đơn hàng
+              Yes, cancel order
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

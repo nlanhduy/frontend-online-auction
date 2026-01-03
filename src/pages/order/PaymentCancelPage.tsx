@@ -20,19 +20,17 @@ export default function PaymentCancelPage() {
       <Card className='w-full max-w-md'>
         <CardContent className='py-12 text-center'>
           <XCircle className='mx-auto h-16 w-16 text-red-500' />
-          <h1 className='mt-4 text-2xl font-bold text-red-600'>Thanh toán đã bị hủy</h1>
+          <h1 className='mt-4 text-2xl font-bold text-red-600'>Payment Cancelled</h1>
           <p className='mt-2 text-gray-600'>
-            Bạn đã hủy thanh toán. Đơn hàng chưa được tạo.
+            You have cancelled the payment. Order was not created.
           </p>
-          <p className='mt-2 text-sm text-gray-500'>
-            Bạn có thể thử thanh toán lại bất kỳ lúc nào.
-          </p>
+          <p className='mt-2 text-sm text-gray-500'>You can try payment again anytime.</p>
           <div className='mt-6 flex flex-col gap-2'>
             <Button onClick={() => navigate(productId ? `/product/${productId}` : '/')}>
-              {productId ? 'Quay lại sản phẩm' : 'Về trang chủ'}
+              {productId ? 'Back to Product' : 'Go to Home'}
             </Button>
             <Button variant='outline' onClick={() => navigate('/')}>
-              Về trang chủ
+              Go to Home
             </Button>
           </div>
         </CardContent>

@@ -8,15 +8,15 @@ interface OrderStatusProgressProps {
 }
 
 const STATUS_STEPS = [
-  { status: OrderStatus.PAYMENT_PENDING, step: 1, label: 'Thanh toán' },
-  { status: OrderStatus.SHIPPING_INFO_PENDING, step: 2, label: 'Địa chỉ giao hàng' },
+  { status: OrderStatus.PAYMENT_PENDING, step: 1, label: 'Payment' },
+  { status: OrderStatus.SHIPPING_INFO_PENDING, step: 2, label: 'Shipping Address' },
   {
     status: OrderStatus.SELLER_CONFIRMATION_PENDING,
     step: 3,
-    label: 'Người bán xác nhận',
+    label: 'Seller Confirmation',
   },
-  { status: OrderStatus.IN_TRANSIT, step: 4, label: 'Đang giao hàng' },
-  { status: OrderStatus.COMPLETED, step: 5, label: 'Hoàn thành' },
+  { status: OrderStatus.IN_TRANSIT, step: 4, label: 'In Transit' },
+  { status: OrderStatus.COMPLETED, step: 5, label: 'Completed' },
 ]
 
 const getStepNumber = (status: OrderStatus): number => {
@@ -32,7 +32,7 @@ export function OrderStatusProgress({ currentStatus }: OrderStatusProgressProps)
   if (currentStatus === OrderStatus.CANCELLED) {
     return (
       <div className='rounded-lg border border-red-200 bg-red-50 p-6 text-center'>
-        <p className='text-lg font-semibold text-red-600'>❌ Đơn hàng đã bị hủy</p>
+        <p className='text-lg font-semibold text-red-600'>❌ Order has been cancelled</p>
       </div>
     )
   }

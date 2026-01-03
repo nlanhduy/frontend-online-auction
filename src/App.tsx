@@ -9,8 +9,6 @@ import OrderFulfillmentPage from './pages/order/OrderFulfillmentPage'
 import PaymentCancelPage from './pages/order/PaymentCancelPage'
 import PaymentSuccessPage from './pages/order/PaymentSuccessPage'
 import ProductDetail from './pages/product/ProductDetailPage'
-import PaymentDemoPage from './pages/test/PaymentDemoPage'
-import PaymentTestPage from './pages/test/PaymentTestPage'
 import { AdminCategories } from './pages/admin/categories'
 import AdminProducts from './pages/admin/products'
 import AdminRequestToSeller from './pages/admin/request-to-seller'
@@ -110,10 +108,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
-        {/* Test Route - Remove in production */}
-        <Route path='/test/payment' element={<PaymentTestPage />} />
-        <Route path='/demo/payment' element={<PaymentDemoPage />} />
 
         {/* Bidder Routes */}
         <Route
