@@ -1,3 +1,4 @@
+import { StickyChatWidget } from '@/components/chat/sticky-chat-widget'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
@@ -55,24 +56,27 @@ function Homepage() {
   ]
 
   return (
-    <div className='container mx-auto flex flex-col gap-16 py-12'>
-      {sections.map((section, index) => (
-        <div key={index}>
-          <h2 className='text-2xl font-bold mb-6 text-gray-900'>{section.title}</h2>
-          <Carousel className='w-full max-w-full px-12' opts={{ align: 'start' }}>
-            <CarouselContent className='-ml-4'>
-              {section.data.map(product => (
-                <CarouselItem key={product.id} className='pl-4 basis-1/3'>
-                  <ProductCard product={product} size='large' />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className='left-0' />
-            <CarouselNext className='right-0' />
-          </Carousel>
-        </div>
-      ))}
-    </div>
+    <>
+      <div className='container mx-auto flex flex-col gap-16 py-12'>
+        {sections.map((section, index) => (
+          <div key={index}>
+            <h2 className='text-2xl font-bold mb-6 text-gray-900'>{section.title}</h2>
+            <Carousel className='w-full max-w-full px-12' opts={{ align: 'start' }}>
+              <CarouselContent className='-ml-4'>
+                {section.data.map(product => (
+                  <CarouselItem key={product.id} className='pl-4 basis-1/3'>
+                    <ProductCard product={product} size='large' />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className='left-0' />
+              <CarouselNext className='right-0' />
+            </Carousel>
+          </div>
+        ))}
+      </div>
+      <StickyChatWidget orderId='07ab5bfd-2b1b-4a3b-a9d7-9e571ca0ffcf' />
+    </>
   )
 }
 

@@ -70,4 +70,7 @@ export const QUERY_KEYS = {
     create: ['ratings', 'create'] as const,
     update: (ratingId: string) => ['ratings', 'update', ratingId] as const,
   },
+
+  chat: (orderId: string) => ['chat', orderId] as const,
+  messages: (orderId: string) => ['chat', orderId, 'messages'] as const,
 } as const

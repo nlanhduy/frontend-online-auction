@@ -13,8 +13,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
-import { OrderStatusProgress } from '@/components/ui/order-status-progress'
-import { RatingForm } from '@/components/ui/rating-form'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -26,6 +24,8 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { OrderStatusProgress } from '@/components/ui/order-status-progress'
+import { RatingForm } from '@/components/ui/rating-form'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { QUERY_KEYS } from '@/constants/queryKey'
@@ -40,7 +40,6 @@ import type {
   ShippingInfoRequest,
   ConfirmShipmentRequest,
 } from '@/types/order.type'
-
 const VIETNAM_CITIES = [
   'Hà Nội',
   'TP. Hồ Chí Minh',

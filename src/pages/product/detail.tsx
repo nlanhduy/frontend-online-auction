@@ -80,6 +80,8 @@ export default function ProductDetail() {
     enabled: !!productId,
     staleTime: 1000 * 60 * 5,
   })
+  const product = productDetailQuery.data
+
   const bidHistoryQuery = useQuery<Bids>({
     queryKey: QUERY_KEYS.products.bidHistory(productId ?? ''),
     queryFn: async () => {
@@ -350,7 +352,6 @@ export default function ProductDetail() {
   }
 
   const isExistedInWatchList = checkExistedItemQuery?.data?.isFavorite
-  const product = productDetailQuery.data
 
   const placeBidMutation = useMutation({
     mutationFn: async ({ productId, amount }: { productId: string; amount: number }) => {
