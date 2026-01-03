@@ -31,6 +31,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { QUERY_KEYS } from '@/constants/queryKey'
 import { useAuth } from '@/hooks/use-auth'
 import { formatPrice, handleApiError } from '@/lib/utils'
+import { LocationAPI } from '@/services/api/location.api'
 import { OrderAPI } from '@/services/api/order.api'
 import { OrderStatus } from '@/types/order.type'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -40,82 +41,6 @@ import type {
   ShippingInfoRequest,
   ConfirmShipmentRequest,
 } from '@/types/order.type'
-const VIETNAM_CITIES = [
-  'Hà Nội',
-  'TP. Hồ Chí Minh',
-  'Đà Nẵng',
-  'Hải Phòng',
-  'Cần Thơ',
-  'An Giang',
-  'Bà Rịa - Vũng Tàu',
-  'Bắc Giang',
-  'Bắc Kạn',
-  'Bạc Liêu',
-  'Bắc Ninh',
-  'Bến Tre',
-  'Bình Định',
-  'Bình Dương',
-  'Bình Phước',
-  'Bình Thuận',
-  'Cà Mau',
-  'Cao Bằng',
-  'Đắk Lắk',
-  'Đắk Nông',
-  'Điện Biên',
-  'Đồng Nai',
-  'Đồng Tháp',
-  'Gia Lai',
-  'Hà Giang',
-  'Hà Nam',
-  'Hà Tĩnh',
-  'Hải Dương',
-  'Hậu Giang',
-  'Hòa Bình',
-  'Hưng Yên',
-  'Khánh Hòa',
-  'Kiên Giang',
-  'Kon Tum',
-  'Lai Châu',
-  'Lâm Đồng',
-  'Lạng Sơn',
-  'Lào Cai',
-  'Long An',
-  'Nam Định',
-  'Nghệ An',
-  'Ninh Bình',
-  'Ninh Thuận',
-  'Phú Thọ',
-  'Phú Yên',
-  'Quảng Bình',
-  'Quảng Nam',
-  'Quảng Ngãi',
-  'Quảng Ninh',
-  'Quảng Trị',
-  'Sóc Trăng',
-  'Sơn La',
-  'Tây Ninh',
-  'Thái Bình',
-  'Thái Nguyên',
-  'Thanh Hóa',
-  'Thừa Thiên Huế',
-  'Tiền Giang',
-  'Trà Vinh',
-  'Tuyên Quang',
-  'Vĩnh Long',
-  'Vĩnh Phúc',
-  'Yên Bái',
-]
-
-const SHIPPING_CARRIERS = [
-  'Giao Hàng Nhanh',
-  'Giao Hàng Tiết Kiệm',
-  'J&T Express',
-  'Viettel Post',
-  'VNPost',
-  'Ninja Van',
-  'Best Express',
-  'Kerry Express',
-]
 
 export default function OrderFulfillmentPage() {
   const { orderId: orderIdOrProductId } = useParams<{ orderId: string }>()
@@ -139,6 +64,23 @@ export default function OrderFulfillmentPage() {
   const [shipmentForm, setShipmentForm] = useState<ConfirmShipmentRequest>({
     carrier: '',
     trackingNumber: '',
+  })
+
+  // Fetch provinces/cities from external API
+  const provincesQuery = useQuery({
+    queryKey: ['provinces'],
+    queryFn: async () => {
+      const data = await LocationAPI.getProvinces(1)
+      return data
+    },
+    staleTime: 1000 * 60 * 60 * 24, // Cache for 24 hours
+  })
+
+  // Fetch shipping carriers
+  const carriersQuery = useQuery({
+    queryKey: ['shipping-carriers'],
+    queryFn: () => LocationAPI.getShippingCarriers(),
+    staleTime: 1000 * 60 * 60 * 24, // Cache for 24 hours
   })
 
   // Fetch order data by orderId
@@ -228,13 +170,13 @@ export default function OrderFulfillmentPage() {
   // Redirect if not authorized
   useEffect(() => {
     if (!isAuthenticated) {
-      toast.error('Vui lòng đăng nhập để xem trang này')
+      toast.error('Please login to view this page')
       navigate('/login')
       return
     }
 
     if (productData && productData.viewType === 'BASIC_INFO') {
-      toast.info(productData.message || 'Sản phẩm đã kết thúc')
+      toast.info(productData.message || 'Product has ended')
       navigate(`/product/${productId}`)
     }
   }, [isAuthenticated, productData, navigate, productId])
@@ -254,7 +196,7 @@ export default function OrderFulfillmentPage() {
       window.location.href = data.approvalUrl
     },
     onError: (error: any) => {
-      handleApiError(error, 'Không thể tạo thanh toán')
+      handleApiError(error, 'Cannot create payment')
     },
   })
 
@@ -267,13 +209,13 @@ export default function OrderFulfillmentPage() {
       return response.data
     },
     onSuccess: () => {
-      toast.success('Đã gửi địa chỉ giao hàng!')
+      toast.success('Shipping address submitted!')
       queryClient.invalidateQueries({
         queryKey: ['order', orderIdOrProductId],
       })
     },
     onError: (error: any) => {
-      handleApiError(error, 'Không thể gửi địa chỉ')
+      handleApiError(error, 'Cannot submit address')
     },
   })
 
@@ -286,13 +228,13 @@ export default function OrderFulfillmentPage() {
       return response.data
     },
     onSuccess: () => {
-      toast.success('Đã xác nhận gửi hàng!')
+      toast.success('Shipment confirmed!')
       queryClient.invalidateQueries({
         queryKey: ['order', orderIdOrProductId],
       })
     },
     onError: (error: any) => {
-      handleApiError(error, 'Không thể xác nhận gửi hàng')
+      handleApiError(error, 'Cannot confirm shipment')
     },
   })
 
@@ -305,13 +247,13 @@ export default function OrderFulfillmentPage() {
       return response.data
     },
     onSuccess: () => {
-      toast.success('Đã xác nhận nhận hàng! Người bán sẽ nhận tiền trong vài phút.')
+      toast.success('Receipt confirmed! Seller will receive payment in a few minutes.')
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.orders.productOrder(productId!),
       })
     },
     onError: (error: any) => {
-      handleApiError(error, 'Không thể xác nhận nhận hàng')
+      handleApiError(error, 'Cannot confirm receipt')
     },
   })
 
@@ -324,14 +266,14 @@ export default function OrderFulfillmentPage() {
       return response.data
     },
     onSuccess: () => {
-      toast.success('Đã hủy giao dịch!')
+      toast.success('Transaction cancelled!')
       setCancelModalOpen(false)
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.orders.productOrder(productId!),
       })
     },
     onError: (error: any) => {
-      handleApiError(error, 'Không thể hủy giao dịch')
+      handleApiError(error, 'Cannot cancel transaction')
     },
   })
 
@@ -374,7 +316,7 @@ export default function OrderFulfillmentPage() {
   const handleSubmitShipping = (e: React.FormEvent) => {
     e.preventDefault()
     if (!shippingForm.address || !shippingForm.city || !shippingForm.phone) {
-      toast.error('Vui lòng điền đầy đủ thông tin bắt buộc')
+      toast.error('Please fill in all required fields')
       return
     }
     submitShippingMutation.mutate(shippingForm)
@@ -383,21 +325,23 @@ export default function OrderFulfillmentPage() {
   const handleConfirmShipment = (e: React.FormEvent) => {
     e.preventDefault()
     if (!shipmentForm.carrier || !shipmentForm.trackingNumber) {
-      toast.error('Vui lòng điền đầy đủ thông tin')
+      toast.error('Please fill in all information')
       return
     }
     confirmShipmentMutation.mutate(shipmentForm)
   }
 
   const handleConfirmReceived = () => {
-    if (window.confirm('Bạn có chắc đã nhận được hàng và hài lòng với sản phẩm?')) {
+    if (
+      window.confirm('Are you sure you have received the item and are satisfied with it?')
+    ) {
       confirmReceivedMutation.mutate()
     }
   }
 
   const handleCancelOrder = () => {
     if (!cancelReason.trim()) {
-      toast.error('Vui lòng nhập lý do hủy giao dịch')
+      toast.error('Please enter cancellation reason')
       return
     }
     cancelOrderMutation.mutate(cancelReason)
@@ -436,23 +380,23 @@ export default function OrderFulfillmentPage() {
         <Card>
           <CardContent className='py-12 text-center'>
             <AlertCircle className='mx-auto h-12 w-12 text-yellow-500' />
-            <h2 className='mt-4 text-xl font-semibold'>Không tìm thấy đơn hàng</h2>
+            <h2 className='mt-4 text-xl font-semibold'>Order not found</h2>
             <p className='mt-2 text-gray-600'>
               {productData?.viewType === 'BASIC_INFO'
-                ? 'Đơn hàng chưa được tạo. Vui lòng thử lại sau giây lát.'
-                : 'Sản phẩm này chưa có đơn hàng hoặc bạn không có quyền truy cập.'}
+                ? 'Order has not been created yet. Please try again in a moment.'
+                : 'This product has no order or you do not have access.'}
             </p>
             <div className='mt-6 flex justify-center gap-3'>
               <Button variant='outline' onClick={() => refetch()}>
-                Thử lại
+                Try again
               </Button>
               <Button onClick={() => navigate(`/product/${productId}`)}>
-                Quay lại sản phẩm
+                Back to product
               </Button>
             </div>
             {error && (
               <p className='mt-4 text-sm text-red-600'>
-                Lỗi: {error instanceof Error ? error.message : 'Unknown error'}
+                Error: {error instanceof Error ? error.message : 'Unknown error'}
               </p>
             )}
           </CardContent>
@@ -464,9 +408,9 @@ export default function OrderFulfillmentPage() {
   return (
     <div className='container mx-auto px-4 py-8'>
       <div className='mb-6'>
-        <h1 className='text-3xl font-bold'>Hoàn tất đơn hàng</h1>
+        <h1 className='text-3xl font-bold'>Complete Order</h1>
         <p className='mt-2 text-gray-600'>
-          Sản phẩm: <span className='font-semibold'>{productData?.name}</span>
+          Product: <span className='font-semibold'>{productData?.name}</span>
         </p>
       </div>
 
@@ -483,16 +427,16 @@ export default function OrderFulfillmentPage() {
               <CardHeader>
                 <CardTitle className='flex items-center gap-2'>
                   <CreditCard className='h-5 w-5' />
-                  Thanh toán đơn hàng
+                  Payment
                 </CardTitle>
               </CardHeader>
               <CardContent className='space-y-4'>
                 <div className='rounded-lg bg-blue-50 p-4'>
                   <p className='text-lg font-semibold text-blue-900'>
-                    Số tiền: {formatPrice(order.paymentAmountVND)}
+                    Amount: {formatPrice(order.paymentAmountVND)}
                   </p>
                   <p className='text-sm text-blue-700'>
-                    (≈ ${order.paymentAmount.toFixed(2)} USD qua PayPal)
+                    (≈ ${order.paymentAmount.toFixed(2)} USD via PayPal)
                   </p>
                 </div>
                 <Button
@@ -500,8 +444,8 @@ export default function OrderFulfillmentPage() {
                   disabled={createPaymentMutation.isPending}
                   className='w-full'>
                   {createPaymentMutation.isPending
-                    ? 'Đang xử lý...'
-                    : '💳 Thanh toán qua PayPal'}
+                    ? 'Processing...'
+                    : '💳 Pay via PayPal'}
                 </Button>
               </CardContent>
             </Card>
@@ -513,16 +457,16 @@ export default function OrderFulfillmentPage() {
               <CardHeader>
                 <CardTitle className='flex items-center gap-2'>
                   <MapPin className='h-5 w-5' />
-                  Thông tin giao hàng
+                  Shipping Information
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmitShipping} className='space-y-4'>
                   <div>
-                    <Label htmlFor='address'>Địa chỉ nhận hàng *</Label>
+                    <Label htmlFor='address'>Shipping Address *</Label>
                     <Input
                       id='address'
-                      placeholder='Số nhà, tên đường...'
+                      placeholder='House number, street...'
                       value={shippingForm.address}
                       onChange={e =>
                         setShippingForm({ ...shippingForm, address: e.target.value })
@@ -533,7 +477,7 @@ export default function OrderFulfillmentPage() {
 
                   <div className='grid gap-4 md:grid-cols-2'>
                     <div>
-                      <Label htmlFor='city'>Tỉnh/Thành phố *</Label>
+                      <Label htmlFor='city'>Province/City *</Label>
                       <select
                         id='city'
                         className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
@@ -541,21 +485,26 @@ export default function OrderFulfillmentPage() {
                         onChange={e =>
                           setShippingForm({ ...shippingForm, city: e.target.value })
                         }
-                        required>
-                        <option value=''>Chọn Tỉnh/Thành phố</option>
-                        {VIETNAM_CITIES.map(city => (
-                          <option key={city} value={city}>
-                            {city}
+                        required
+                        disabled={provincesQuery.isLoading}>
+                        <option value=''>
+                          {provincesQuery.isLoading
+                            ? 'Loading...'
+                            : 'Select Province/City'}
+                        </option>
+                        {provincesQuery.data?.map(province => (
+                          <option key={province.code} value={province.name}>
+                            {province.name}
                           </option>
                         ))}
                       </select>
                     </div>
 
                     <div>
-                      <Label htmlFor='district'>Quận/Huyện *</Label>
+                      <Label htmlFor='district'>District *</Label>
                       <Input
                         id='district'
-                        placeholder='Nhập Quận/Huyện'
+                        placeholder='Enter District'
                         value={shippingForm.district}
                         onChange={e =>
                           setShippingForm({ ...shippingForm, district: e.target.value })
@@ -566,7 +515,7 @@ export default function OrderFulfillmentPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor='phone'>Số điện thoại *</Label>
+                    <Label htmlFor='phone'>Phone Number *</Label>
                     <Input
                       id='phone'
                       type='tel'
@@ -581,10 +530,10 @@ export default function OrderFulfillmentPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor='note'>Ghi chú</Label>
+                    <Label htmlFor='note'>Note</Label>
                     <Textarea
                       id='note'
-                      placeholder='Ghi chú cho người bán (không bắt buộc)'
+                      placeholder='Note for seller (optional)'
                       value={shippingForm.note}
                       onChange={e =>
                         setShippingForm({ ...shippingForm, note: e.target.value })
@@ -595,8 +544,8 @@ export default function OrderFulfillmentPage() {
 
                   <Button type='submit' disabled={submitShippingMutation.isPending}>
                     {submitShippingMutation.isPending
-                      ? 'Đang gửi...'
-                      : 'Gửi địa chỉ giao hàng'}
+                      ? 'Submitting...'
+                      : 'Submit Shipping Address'}
                   </Button>
                 </form>
               </CardContent>
@@ -609,7 +558,7 @@ export default function OrderFulfillmentPage() {
               <CardHeader>
                 <CardTitle className='flex items-center gap-2'>
                   <Package className='h-5 w-5' />
-                  Xác nhận gửi hàng
+                  Confirm Shipment
                 </CardTitle>
               </CardHeader>
               <CardContent className='space-y-6'>
@@ -617,19 +566,19 @@ export default function OrderFulfillmentPage() {
                 <div className='rounded-lg bg-green-50 p-4'>
                   <p className='flex items-center gap-2 font-semibold text-green-900'>
                     <CheckCircle className='h-5 w-5' />
-                    Đã nhận thanh toán
+                    Payment Received
                   </p>
                   <p className='mt-1 text-green-700'>
-                    Số tiền: ${order.sellerAmount.toFixed(2)} USD
+                    Amount: ${order.sellerAmount.toFixed(2)} USD
                   </p>
                   <p className='text-sm text-green-600'>
-                    Bạn sẽ nhận tiền vào PayPal sau khi người mua xác nhận đã nhận hàng
+                    You will receive payment to PayPal after buyer confirms receipt
                   </p>
                 </div>
 
                 {/* Shipping Address */}
                 <div className='rounded-lg border p-4'>
-                  <h4 className='mb-2 font-semibold'>📍 Địa chỉ giao hàng:</h4>
+                  <h4 className='mb-2 font-semibold'>📍 Shipping Address:</h4>
                   <p>{order.shippingAddress}</p>
                   <p>
                     {order.shippingDistrict}, {order.shippingCity}
@@ -637,7 +586,7 @@ export default function OrderFulfillmentPage() {
                   <p className='mt-2'>📞 {order.shippingPhone}</p>
                   {order.shippingNote && (
                     <p className='mt-2 text-sm text-gray-600'>
-                      💬 Ghi chú: {order.shippingNote}
+                      💬 Note: {order.shippingNote}
                     </p>
                   )}
                 </div>
@@ -645,7 +594,7 @@ export default function OrderFulfillmentPage() {
                 {/* Shipment Form */}
                 <form onSubmit={handleConfirmShipment} className='space-y-4'>
                   <div>
-                    <Label htmlFor='carrier'>Đơn vị vận chuyển *</Label>
+                    <Label htmlFor='carrier'>Shipping Carrier *</Label>
                     <select
                       id='carrier'
                       className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
@@ -653,9 +602,12 @@ export default function OrderFulfillmentPage() {
                       onChange={e =>
                         setShipmentForm({ ...shipmentForm, carrier: e.target.value })
                       }
-                      required>
-                      <option value=''>Chọn đơn vị vận chuyển</option>
-                      {SHIPPING_CARRIERS.map(carrier => (
+                      required
+                      disabled={carriersQuery.isLoading}>
+                      <option value=''>
+                        {carriersQuery.isLoading ? 'Loading...' : 'Select Carrier'}
+                      </option>
+                      {carriersQuery.data?.map(carrier => (
                         <option key={carrier} value={carrier}>
                           {carrier}
                         </option>
@@ -664,7 +616,7 @@ export default function OrderFulfillmentPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor='trackingNumber'>Mã vận đơn *</Label>
+                    <Label htmlFor='trackingNumber'>Tracking Number *</Label>
                     <Input
                       id='trackingNumber'
                       placeholder='VN123456789'
@@ -681,8 +633,8 @@ export default function OrderFulfillmentPage() {
 
                   <Button type='submit' disabled={confirmShipmentMutation.isPending}>
                     {confirmShipmentMutation.isPending
-                      ? 'Đang xử lý...'
-                      : 'Xác nhận đã gửi hàng'}
+                      ? 'Processing...'
+                      : 'Confirm Shipment'}
                   </Button>
                 </form>
               </CardContent>
@@ -697,25 +649,25 @@ export default function OrderFulfillmentPage() {
                 <CardHeader>
                   <CardTitle className='flex items-center gap-2'>
                     <Truck className='h-5 w-5' />
-                    Đơn hàng đang giao
+                    Order In Transit
                   </CardTitle>
                 </CardHeader>
                 <CardContent className='space-y-4'>
                   <div className='rounded-lg border p-4'>
                     <p>
-                      Đơn vị vận chuyển: <strong>{order.shippingCarrier}</strong>
+                      Carrier: <strong>{order.shippingCarrier}</strong>
                     </p>
                     <p className='mt-1'>
-                      Mã vận đơn: <strong>{order.trackingNumber}</strong>
+                      Tracking Number: <strong>{order.trackingNumber}</strong>
                     </p>
                     <p className='mt-1 text-sm text-gray-600'>
-                      Ngày gửi: {new Date(order.shippedAt!).toLocaleDateString('vi-VN')}
+                      Shipped: {new Date(order.shippedAt!).toLocaleDateString('en-US')}
                     </p>
                   </div>
 
                   <div className='rounded-lg bg-yellow-50 p-4'>
                     <p className='text-sm text-yellow-800'>
-                      ⚠️ Vui lòng kiểm tra hàng kỹ lưỡng trước khi xác nhận nhận hàng
+                      ⚠️ Please inspect the item carefully before confirming receipt
                     </p>
                   </div>
 
@@ -723,8 +675,8 @@ export default function OrderFulfillmentPage() {
                     onClick={handleConfirmReceived}
                     disabled={confirmReceivedMutation.isPending}>
                     {confirmReceivedMutation.isPending
-                      ? 'Đang xử lý...'
-                      : '✅ Tôi đã nhận được hàng'}
+                      ? 'Processing...'
+                      : '✅ I have received the item'}
                   </Button>
                 </CardContent>
               </Card>
@@ -750,25 +702,25 @@ export default function OrderFulfillmentPage() {
         <div className='space-y-6'>
           <Card>
             <CardHeader>
-              <CardTitle>Thông tin đơn hàng</CardTitle>
+              <CardTitle>Order Information</CardTitle>
             </CardHeader>
             <CardContent className='space-y-3 text-sm'>
               <div className='flex justify-between'>
-                <span className='text-gray-600'>Mã đơn:</span>
+                <span className='text-gray-600'>Order ID:</span>
                 <span className='font-mono text-xs'>{order.id.slice(0, 8)}...</span>
               </div>
               <div className='flex justify-between'>
-                <span className='text-gray-600'>Giá sản phẩm:</span>
+                <span className='text-gray-600'>Product Price:</span>
                 <span className='font-semibold'>
                   {formatPrice(order.paymentAmountVND)}
                 </span>
               </div>
               <div className='flex justify-between'>
-                <span className='text-gray-600'>Phí platform (5%):</span>
+                <span className='text-gray-600'>Platform Fee (5%):</span>
                 <span>${order.platformFee.toFixed(2)}</span>
               </div>
               <div className='flex justify-between'>
-                <span className='text-gray-600'>Người bán nhận:</span>
+                <span className='text-gray-600'>Seller Receives:</span>
                 <span className='font-semibold text-green-600'>
                   ${order.sellerAmount.toFixed(2)} USD
                 </span>
@@ -779,7 +731,7 @@ export default function OrderFulfillmentPage() {
           {/* Buyer/Seller Info */}
           <Card>
             <CardHeader>
-              <CardTitle>{isBuyer ? 'Người bán' : 'Người mua'}</CardTitle>
+              <CardTitle>{isBuyer ? 'Seller' : 'Buyer'}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className='font-semibold'>
@@ -800,7 +752,7 @@ export default function OrderFulfillmentPage() {
                 className='w-full'
                 onClick={() => setCancelModalOpen(true)}>
                 <X className='mr-2 h-4 w-4' />
-                Hủy giao dịch
+                Cancel Transaction
               </Button>
             )}
         </div>
@@ -812,18 +764,19 @@ export default function OrderFulfillmentPage() {
           <DialogHeader>
             <DialogTitle className='flex items-center gap-2'>
               <ThumbsDown className='h-5 w-5 text-red-500' />
-              Xác nhận hủy giao dịch
+              Confirm Cancellation
             </DialogTitle>
             <DialogDescription>
-              Bạn có chắc muốn hủy giao dịch này? Người mua sẽ nhận điểm đánh giá -1.
+              Are you sure you want to cancel this transaction? The buyer will receive a
+              -1 rating.
             </DialogDescription>
           </DialogHeader>
           <div className='space-y-4'>
             <div>
-              <Label htmlFor='cancelReason'>Lý do hủy giao dịch *</Label>
+              <Label htmlFor='cancelReason'>Cancellation Reason *</Label>
               <Textarea
                 id='cancelReason'
-                placeholder='Vui lòng cho biết lý do...'
+                placeholder='Please provide reason...'
                 value={cancelReason}
                 onChange={e => setCancelReason(e.target.value)}
                 rows={4}
@@ -835,10 +788,10 @@ export default function OrderFulfillmentPage() {
                 variant='destructive'
                 onClick={handleCancelOrder}
                 disabled={cancelOrderMutation.isPending}>
-                {cancelOrderMutation.isPending ? 'Đang hủy...' : 'Xác nhận hủy'}
+                {cancelOrderMutation.isPending ? 'Cancelling...' : 'Confirm Cancellation'}
               </Button>
               <Button variant='outline' onClick={() => setCancelModalOpen(false)}>
-                Quay lại
+                Go Back
               </Button>
             </div>
           </div>

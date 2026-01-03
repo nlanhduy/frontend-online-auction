@@ -59,8 +59,8 @@ export default function ProductDetail() {
 
   const product = productDetailQuery.data
 
-  // Không tự động redirect nữa - chỉ redirect khi đã có order
-  // Order chỉ được tạo sau khi thanh toán xong
+  // No automatic redirect - only redirect when order exists
+  // Order is only created after payment is completed
 
   const checkExistedItemQuery = useQuery({
     queryKey: QUERY_KEYS.watchList.check(productId ?? ''),
@@ -133,7 +133,7 @@ export default function ProductDetail() {
       window.location.href = data.approvalUrl
     },
     onError: (error: any) => {
-      handleApiError(error, 'Không thể tạo thanh toán')
+      handleApiError(error, 'Cannot create payment')
     },
   })
 

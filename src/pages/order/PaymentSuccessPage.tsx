@@ -21,7 +21,7 @@ export default function PaymentSuccessPage() {
   useEffect(() => {
     // Check if user is still authenticated
     if (!isAuthenticated) {
-      toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại')
+      toast.error('Session expired. Please login again')
       navigate('/login?redirect=/payment/success' + window.location.search)
       return
     }
@@ -34,13 +34,13 @@ export default function PaymentSuccessPage() {
     const finalProductId = productIdParam || storedProductId
 
     if (!orderId || !payerId) {
-      toast.error('Thông tin thanh toán không hợp lệ: Thiếu token hoặc PayerID')
+      toast.error('Invalid payment information: Missing token or PayerID')
       navigate('/')
       return
     }
 
     if (!finalProductId) {
-      toast.error('Thông tin thanh toán không hợp lệ: Thiếu Product ID')
+      toast.error('Invalid payment information: Missing Product ID')
       navigate('/')
       return
     }
@@ -60,7 +60,7 @@ export default function PaymentSuccessPage() {
 
       if (response.data.success && response.data.order) {
         const createdOrderId = response.data.order.id
-        toast.success('Thanh toán thành công!')
+        toast.success('Payment successful!')
         // Clear pending product ID
         localStorage.removeItem('pendingProductId')
         setIsProcessing(false)
@@ -74,7 +74,7 @@ export default function PaymentSuccessPage() {
       }
     } catch (error: any) {
       console.error('Capture error:', error)
-      handleApiError(error, 'Thanh toán thất bại')
+      handleApiError(error, 'Payment failed')
       navigate('/')
     }
   }
@@ -85,8 +85,8 @@ export default function PaymentSuccessPage() {
         <Card className='w-full max-w-md'>
           <CardContent className='py-12 text-center'>
             <Spinner />
-            <p className='mt-4 text-lg font-semibold'>Đang xử lý thanh toán...</p>
-            <p className='mt-2 text-sm text-gray-600'>Vui lòng không đóng trang này</p>
+            <p className='mt-4 text-lg font-semibold'>Processing payment...</p>
+            <p className='mt-2 text-sm text-gray-600'>Please do not close this page</p>
           </CardContent>
         </Card>
       </div>
@@ -99,13 +99,13 @@ export default function PaymentSuccessPage() {
         <CardContent className='py-12 text-center'>
           <CheckCircle className='mx-auto h-16 w-16 text-green-500' />
           <h1 className='mt-4 text-2xl font-bold text-green-600'>
-            Thanh toán thành công!
+            Payment Successful!
           </h1>
           <p className='mt-2 text-gray-600'>
-            Đơn hàng của bạn đã được tạo. Vui lòng gửi địa chỉ giao hàng.
+            Your order has been created. Please submit your shipping address.
           </p>
           <Button className='mt-6' onClick={() => navigate(`/order/${productId}`)}>
-            Tiếp tục hoàn tất đơn hàng
+            Continue to Complete Order
           </Button>
         </CardContent>
       </Card>

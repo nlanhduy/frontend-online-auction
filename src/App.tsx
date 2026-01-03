@@ -23,7 +23,7 @@ import Homepage from './pages/homepage'
 import OrderFulfillmentPage from './pages/order/OrderFulfillmentPage'
 import PaymentCancelPage from './pages/order/PaymentCancelPage'
 import PaymentSuccessPage from './pages/order/PaymentSuccessPage'
-import ProductDetail from './pages/product/detail'
+import ProductDetail from './pages/product/ProductDetailPage'
 import Rating from './pages/rating'
 import Search from './pages/search'
 import SellerCompletedAuctions from './pages/seller/auction/completed'
@@ -33,8 +33,6 @@ import SellerProducts from './pages/seller/product'
 import SellerCreateProduct from './pages/seller/product/create'
 import SellerProductEdit from './pages/seller/product/edit'
 import { Setting } from './pages/setting'
-import PaymentDemoPage from './pages/test/PaymentDemoPage'
-import PaymentTestPage from './pages/test/PaymentTestPage'
 import WatchList from './pages/watchList'
 import { UserRole } from './types/auth.types'
 
@@ -110,10 +108,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
-        {/* Test Route - Remove in production */}
-        <Route path='/test/payment' element={<PaymentTestPage />} />
-        <Route path='/demo/payment' element={<PaymentDemoPage />} />
 
         {/* Bidder Routes */}
         <Route

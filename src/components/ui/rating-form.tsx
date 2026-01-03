@@ -35,7 +35,7 @@ export function RatingForm({
 
   const handleSubmit = async () => {
     if (ratingValue === null) {
-      toast.error('Vui lòng chọn đánh giá +1 hoặc -1')
+      toast.error('Please select +1 or -1 rating')
       return
     }
 
@@ -45,9 +45,9 @@ export function RatingForm({
         comment: comment.trim() || undefined,
       })
       setIsEditing(false)
-      toast.success(existingRating ? 'Đã cập nhật đánh giá!' : 'Đã gửi đánh giá!')
+      toast.success(existingRating ? 'Rating updated!' : 'Rating submitted!')
     } catch (error) {
-      toast.error('Không thể gửi đánh giá. Vui lòng thử lại.')
+      toast.error('Cannot submit rating. Please try again.')
     }
   }
 
@@ -57,11 +57,11 @@ export function RatingForm({
         <CardHeader>
           <CardTitle className='flex items-center justify-between'>
             <span>
-              ⭐ Đánh giá {userType === 'buyer' ? 'người bán' : 'người mua'}:{' '}
+              ⭐ Rate {userType === 'buyer' ? 'Seller' : 'Buyer'}:{' '}
               {targetUser.fullName}
             </span>
             <Button variant='outline' size='sm' onClick={() => setIsEditing(true)}>
-              ✏️ Chỉnh sửa
+              ✏️ Edit
             </Button>
           </CardTitle>
         </CardHeader>
@@ -70,12 +70,12 @@ export function RatingForm({
             {existingRating.value === 1 ? (
               <span className='flex items-center gap-2 text-green-600'>
                 <ThumbsUp className='h-5 w-5' />
-                <span className='font-semibold'>Tốt (+1)</span>
+                <span className='font-semibold'>Good (+1)</span>
               </span>
             ) : (
               <span className='flex items-center gap-2 text-red-600'>
                 <ThumbsDown className='h-5 w-5' />
-                <span className='font-semibold'>Không tốt (-1)</span>
+                <span className='font-semibold'>Bad (-1)</span>
               </span>
             )}
           </div>
@@ -94,7 +94,7 @@ export function RatingForm({
     <Card>
       <CardHeader>
         <CardTitle>
-          ⭐ Đánh giá {userType === 'buyer' ? 'người bán' : 'người mua'}:{' '}
+          ⭐ Rate {userType === 'buyer' ? 'Seller' : 'Buyer'}:{' '}
           {targetUser.fullName}
         </CardTitle>
       </CardHeader>
@@ -109,7 +109,7 @@ export function RatingForm({
             })}
             onClick={() => setRatingValue(1)}>
             <ThumbsUp className='mr-2 h-5 w-5' />
-            Tốt (+1)
+            Good (+1)
           </Button>
 
           <Button
@@ -120,35 +120,35 @@ export function RatingForm({
             })}
             onClick={() => setRatingValue(-1)}>
             <ThumbsDown className='mr-2 h-5 w-5' />
-            Không tốt (-1)
+            Bad (-1)
           </Button>
         </div>
 
         <div>
           <label className='mb-2 block text-sm font-medium text-gray-700'>
-            Nhận xét (không bắt buộc)
+            Comment (optional)
           </label>
           <Textarea
-            placeholder='Chia sẻ trải nghiệm của bạn về giao dịch này...'
+            placeholder='Share your experience about this transaction...'
             value={comment}
             onChange={e => setComment(e.target.value)}
             maxLength={500}
             rows={4}
           />
-          <p className='mt-1 text-xs text-gray-500'>{comment.length}/500 ký tự</p>
+          <p className='mt-1 text-xs text-gray-500'>{comment.length}/500 characters</p>
         </div>
 
         <div className='flex gap-2'>
           <Button onClick={handleSubmit} disabled={isLoading || ratingValue === null}>
             {isLoading
-              ? 'Đang gửi...'
+              ? 'Submitting...'
               : existingRating
-                ? 'Cập nhật đánh giá'
-                : 'Gửi đánh giá'}
+                ? 'Update Rating'
+                : 'Submit Rating'}
           </Button>
           {existingRating && (
             <Button variant='outline' onClick={() => setIsEditing(false)}>
-              Hủy
+              Cancel
             </Button>
           )}
         </div>
