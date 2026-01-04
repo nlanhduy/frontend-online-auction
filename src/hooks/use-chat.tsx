@@ -94,8 +94,6 @@ export const useChat = (orderId: string, options: UseOrderChatOptions = {}) => {
     if (!orderId || !autoConnect || !accessToken) return
 
     const handleJwtError = (data: { message: string; reason: string }) => {
-      console.error('JWT Error:', data.message)
-
       if (data.reason === 'expired') {
         toast.error('Session expired. Please log in again.')
         logout.mutate()
@@ -136,11 +134,9 @@ export const useChat = (orderId: string, options: UseOrderChatOptions = {}) => {
       onError?.('Connection failed. Retrying...')
     })
 
-    // Chat events
     socket.on('joined_chat', (data: any) => {
       console.log('Joined chat room:', data.roomName)
       setUnreadCount(data.unreadCount || 0)
-      // Fetch messages directly without using the callback
       ChatAPI.getMessages({
         variables: { orderId },
         options: {
@@ -162,14 +158,11 @@ export const useChat = (orderId: string, options: UseOrderChatOptions = {}) => {
     })
 
     socket.on('new_message', (msg: Message) => {
-      console.log('📩 New message received:', msg)
       setMessages(prev => {
-        // Avoid duplicates
         if (prev.some(m => m.id === msg.id)) return prev
         return [...prev, msg]
       })
 
-      // Increment unread count if message is from another user
       if (msg.senderId !== user?.id) {
         setUnreadCount(prev => prev + 1)
         onNewMessage?.(msg)
@@ -177,9 +170,8 @@ export const useChat = (orderId: string, options: UseOrderChatOptions = {}) => {
     })
 
     socket.on(
-      'typing',
+      'user_typing',
       (data: { userId: string; fullName: string; isTyping: boolean }) => {
-        console.log('👀 Typing event:', data)
         setTypingUsers(prev => {
           const filtered = prev.filter(u => u.userId !== data.userId)
           if (data.isTyping) {
@@ -194,7 +186,6 @@ export const useChat = (orderId: string, options: UseOrderChatOptions = {}) => {
     )
 
     socket.on('messages_read', (data: { userId: string }) => {
-      console.log('✓ Messages marked as read by:', data.userId)
       if (data.userId !== user?.id) {
         setMessages(prev =>
           prev.map(msg => (msg.senderId === user?.id ? { ...msg, isRead: true } : msg)),
@@ -268,7 +259,7 @@ export const useChat = (orderId: string, options: UseOrderChatOptions = {}) => {
     (isTyping: boolean) => {
       if (!socketRef.current?.connected) return
 
-      socketRef.current.emit('typing', { orderId, isTyping })
+      socketRef.current.emit('user_typing', { orderId, isTyping })
     },
     [orderId],
   )
@@ -313,8 +304,8 @@ export const useChat = (orderId: string, options: UseOrderChatOptions = {}) => {
     // Actions
     sendMessage,
     markAsRead,
-    fetchMessages,
     loadMore,
+    fetchMessages,
     handleTyping,
     reconnect,
   }

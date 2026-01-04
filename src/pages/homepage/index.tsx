@@ -28,6 +28,7 @@ function Homepage() {
       const response = await ProductAPI.getHomePageProducts({ options: {} })
       return response.data
     },
+    refetchOnWindowFocus: false,
   })
 
   if (isLoading) {

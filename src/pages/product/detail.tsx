@@ -151,12 +151,10 @@ export default function ProductDetail() {
         const response = await OrderAPI.getProductWithOrder({
           variables: { productId: productId! },
         })
-        console.log('🔍 Order check response:', response.data)
-        console.log('🔍 Order exists:', !!response.data?.order)
-        console.log('🔍 Payment status:', response.data?.order?.paymentStatus)
+
         return response.data
       } catch (error) {
-        console.log('❌ Order check failed:', error)
+        handleApiError(error)
         return null
       }
     },

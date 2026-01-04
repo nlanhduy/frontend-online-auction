@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import { BidHistoryTable } from '@/components/ui/bid-history'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
@@ -22,8 +23,9 @@ import {
   getTimeRemaining,
   handleApiError,
 } from '@/lib/utils'
-import { ProductAPI } from '@/services/api/product.api'
+import { BidAPI } from '@/services/api/bid.api'
 import { OrderAPI } from '@/services/api/order.api'
+import { ProductAPI } from '@/services/api/product.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type {
@@ -33,6 +35,7 @@ import type {
 } from '@/components/ui/product-question-tree'
 
 import type { Product } from '@/types/product.type'
+import type { Bids } from '@/types/bid.type'
 export default function ProductDetail() {
   const { productId } = useParams<{ productId: string }>()
   const navigate = useNavigate()
@@ -58,6 +61,21 @@ export default function ProductDetail() {
   })
 
   const product = productDetailQuery.data
+
+  const bidHistoryQuery = useQuery<Bids>({
+    queryKey: QUERY_KEYS.products.bidHistory(productId ?? ''),
+    queryFn: async () => {
+      const response = await BidAPI.getProductBidHistory({
+        variables: { productId: productId! },
+      })
+      return response.data
+    },
+    enabled: !!productId,
+    staleTime: 1000 * 60 * 5,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  })
+  const bidHistory = bidHistoryQuery.data
 
   // No automatic redirect - only redirect when order exists
   // Order is only created after payment is completed
@@ -105,12 +123,10 @@ export default function ProductDetail() {
         const response = await OrderAPI.getProductWithOrder({
           variables: { productId: productId! },
         })
-        console.log('🔍 Order check response:', response.data)
-        console.log('🔍 Order exists:', !!response.data?.order)
-        console.log('🔍 Payment status:', response.data?.order?.paymentStatus)
+
         return response.data
       } catch (error) {
-        console.log('❌ Order check failed:', error)
+        handleApiError(error)
         return null
       }
     },
@@ -304,7 +320,6 @@ export default function ProductDetail() {
 
   const isExistedInWatchList = checkExistedItemQuery?.data?.isFavorite
 
-  console.log('Product Detail:', product)
   if (productDetailQuery.isPending)
     return (
       <>
@@ -558,6 +573,16 @@ export default function ProductDetail() {
       <div className='grid grid-cols-2 gap-8'>
         <div className=''>
           <h2 className='text-2xl font-bold mb-4'>Bid History</h2>
+          {bidHistoryQuery.isPending ? (
+            <p className='text-gray-500'>
+              <Button disabled size='lg'>
+                <Spinner />
+                Loading bid history
+              </Button>
+            </p>
+          ) : (
+            <BidHistoryTable bidHistory={bidHistory} />
+          )}
         </div>
         <div className=''>
           <div className='mt-8 bg-white rounded-lg'>
