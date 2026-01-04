@@ -89,12 +89,12 @@ export function Setting() {
   })
 
   const requestSellerStatusQuery = useQuery({
-    queryKey: QUERY_KEYS.requestToSellers.detail(userInformation?.id || ''),
+    queryKey: QUERY_KEYS.requestToSellers.detail(userInformation?.id),
     queryFn: async () => {
       const response = await AuthAPI.getRequestSellerStatus({})
       return response.data
     },
-    enabled: !!isAuthenticated,
+    enabled: !!isAuthenticated && !!userInformation?.id,
     staleTime: 1000 * 60 * 5,
   })
   const requestToSeller = requestSellerStatusQuery.data

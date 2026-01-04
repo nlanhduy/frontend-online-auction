@@ -13,6 +13,7 @@ export interface APIParams {
 }
 
 export const axiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_BACKEND_URL,
   timeout: 30000,
   withCredentials: true,
   headers: {
@@ -55,6 +56,12 @@ axiosInstance.interceptors.response.use(
     }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      if (originalRequest.url?.includes('/auth/refresh')) {
+        useAuthStore.getState().clearAuth()
+        window.location.href = '/login'
+        return Promise.reject(error)
+      }
+
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({
@@ -75,9 +82,14 @@ axiosInstance.interceptors.response.use(
 
       try {
         const res = await axios.post(
-          `${import.meta.env.VITE_IAM_SERVICE}/auth/refresh`,
+          `${import.meta.env.VITE_BACKEND_URL}/auth/refresh`,
           {},
-          { withCredentials: true },
+          {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
         )
 
         const { accessToken, user } = res.data
@@ -94,7 +106,9 @@ axiosInstance.interceptors.response.use(
       } catch (err) {
         processQueue(err, null)
         useAuthStore.getState().clearAuth()
-        window.location.href = '/login'
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login'
+        }
         return Promise.reject(err)
       } finally {
         isRefreshing = false
