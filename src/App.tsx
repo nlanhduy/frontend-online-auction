@@ -8,6 +8,7 @@ import { AdminCategories } from './pages/admin/categories'
 import { AdminDashboard } from './pages/admin/dashboard'
 import AdminProducts from './pages/admin/products'
 import AdminRequestToSeller from './pages/admin/request-to-seller'
+import { AdminSystemSetting } from './pages/admin/systemSetting'
 import { AdminUsers } from './pages/admin/users'
 import { AdminCreateUser } from './pages/admin/users/create'
 import { AdminUserDetail } from './pages/admin/users/detail'
@@ -24,7 +25,7 @@ import Homepage from './pages/homepage'
 import OrderFulfillmentPage from './pages/order/OrderFulfillmentPage'
 import PaymentCancelPage from './pages/order/PaymentCancelPage'
 import PaymentSuccessPage from './pages/order/PaymentSuccessPage'
-import ProductDetail from './pages/product/ProductDetailPage'
+import ProductDetail from './pages/product/detail'
 import Rating from './pages/rating'
 import Search from './pages/search'
 import SellerCompletedAuctions from './pages/seller/auction/completed'
@@ -253,10 +254,10 @@ function App() {
           }
         />
         <Route
-          path='admin/settings'
+          path='admin/system-settings'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Admin]}>
-              {/* <AdminSettings /> */}
+              <AdminSystemSetting />
             </ProtectedRoute>
           }
         />

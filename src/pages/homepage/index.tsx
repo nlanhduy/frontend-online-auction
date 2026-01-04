@@ -1,4 +1,3 @@
-import { StickyChatWidget } from '@/components/chat/sticky-chat-widget'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
@@ -28,6 +27,7 @@ function Homepage() {
       const response = await ProductAPI.getHomePageProducts({ options: {} })
       return response.data
     },
+    staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
   })
 
@@ -76,7 +76,6 @@ function Homepage() {
           </div>
         ))}
       </div>
-      <StickyChatWidget orderId='07ab5bfd-2b1b-4a3b-a9d7-9e571ca0ffcf' />
     </>
   )
 }

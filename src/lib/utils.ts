@@ -84,8 +84,9 @@ export function handleApiError(error: any, fallbackMessage = 'Something went wro
   return finalMessage
 }
 
-export const formatReadableDate = (isoString?: string) => {
+export const formatReadableDate = (isoString?: string, withTime = false) => {
   if (!isoString) return ''
+  if (!withTime) return dayjs(isoString).format('DD/MM/YYYY')
   return dayjs(isoString).format('DD/MM/YYYY HH:mm')
 }
 

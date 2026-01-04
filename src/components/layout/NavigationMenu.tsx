@@ -34,15 +34,16 @@ export function CategoriesMenu() {
           <NavigationMenuTrigger className='text-sm font-medium'>
             Categories
           </NavigationMenuTrigger>
-          {categories.length === 0 || isPending ? (
-            <>
-              <div className='flex items-center justify-center p-10'>
-                <Spinner />
-                <span className='ml-2'>Loading...</span>
-              </div>
-            </>
-          ) : (
-            <NavigationMenuContent>
+
+          <NavigationMenuContent>
+            {categories.length === 0 || isPending ? (
+              <>
+                <div className='flex items-center justify-center p-10'>
+                  <Spinner />
+                  <span className='ml-2'>Loading...</span>
+                </div>
+              </>
+            ) : (
               <ul className='grid w-[700px] gap-3 p-4 md:w-[800px] lg:w-[1000px] lg:grid-cols-4'>
                 {categories
                   .filter((category: Category) => category.children?.length > 0)
@@ -98,8 +99,8 @@ export function CategoriesMenu() {
                     </li>
                   ))}
               </ul>
-            </NavigationMenuContent>
-          )}
+            )}
+          </NavigationMenuContent>
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>

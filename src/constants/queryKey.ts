@@ -78,5 +78,6 @@ export const QUERY_KEYS = {
     stats: ['admin', 'dashboard', 'stats'] as const,
     userGrowth: ['admin', 'dashboard', 'user-growth'] as const,
     auctionsStats: ['admin', 'dashboard', 'auctions-stats'] as const,
+    systemSettings: ['admin', 'system-settings'] as const,
   },
 } as const

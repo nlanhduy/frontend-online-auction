@@ -80,9 +80,13 @@ function Rating() {
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold text-green-600'>{positiveRating}</div>
-            <p className='text-xs text-gray-500 mt-1'>
-              {positivePercentage.toFixed(1)}% positive
-            </p>
+            {totalRatings === 0 ? (
+              <p className='text-xs text-gray-500 mt-1'>0% positive</p>
+            ) : (
+              <p className='text-xs text-gray-500 mt-1'>
+                {positivePercentage.toFixed(1)}% positive
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -94,9 +98,13 @@ function Rating() {
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold text-red-600'>{negativeRating}</div>
-            <p className='text-xs text-gray-500 mt-1'>
-              {(100 - positivePercentage).toFixed(1)}% negative
-            </p>
+            {totalRatings === 0 ? (
+              <p className='text-xs text-gray-500 mt-1'>0% negative</p>
+            ) : (
+              <p className='text-xs text-gray-500 mt-1'>
+                {(100 - positivePercentage).toFixed(1)}% negative
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -129,7 +137,11 @@ function Rating() {
               </span>
               <span className='font-medium'>{positiveRating}</span>
             </div>
-            <Progress value={positivePercentage} className='h-3 [&>div]:bg-green-600' />
+            {totalRatings === 0 ? (
+              <Progress value={0} className='h-3 [&>div]:bg-green-600' />
+            ) : (
+              <Progress value={positivePercentage} className='h-3 [&>div]:bg-green-600' />
+            )}
           </div>
           <div className='space-y-2'>
             <div className='flex items-center justify-between text-sm'>
@@ -139,10 +151,14 @@ function Rating() {
               </span>
               <span className='font-medium'>{negativeRating}</span>
             </div>
-            <Progress
-              value={100 - positivePercentage}
-              className='h-3 [&>div]:bg-red-600'
-            />
+            {totalRatings === 0 ? (
+              <Progress value={0} className='h-3 [&>div]:bg-red-600' />
+            ) : (
+              <Progress
+                value={100 - positivePercentage}
+                className='h-3 [&>div]:bg-red-600'
+              />
+            )}
           </div>
         </CardContent>
       </Card>

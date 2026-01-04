@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ArrowLeft, CalendarIcon } from 'lucide-react'
+import { CalendarIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
-import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
@@ -34,7 +33,7 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { QUERY_KEYS } from '@/constants/queryKey'
-import { formatDate, formatToYYYYMMDD, handleApiError, isValidDate } from '@/lib/utils'
+import { formatDate, formatToYYYYMMDD, handleApiError } from '@/lib/utils'
 import { createUserSchema } from '@/lib/validation/auth'
 import { AuthAPI } from '@/services/api/auth.api'
 import { UserRole } from '@/types/auth.types'
