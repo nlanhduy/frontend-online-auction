@@ -29,7 +29,7 @@ export const OrderAPI = {
       method: 'post',
       headers: getHeaders(),
       url: `${import.meta.env.VITE_BACKEND_URL}/payment/create-order`,
-      data: { productId: variables.productId },
+      data: options?.data || { productId: variables.productId },
       ...options,
     })
   },
