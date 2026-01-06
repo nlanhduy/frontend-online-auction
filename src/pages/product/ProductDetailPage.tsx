@@ -35,9 +35,9 @@ import {
   getAuctionStatus,
   handleApiError,
 } from '@/lib/utils'
-import { ProductAPI } from '@/services/api/product.api'
-import { OrderAPI } from '@/services/api/order.api'
 import { BidAPI } from '@/services/api/bid.api'
+import { OrderAPI } from '@/services/api/order.api'
+import { ProductAPI } from '@/services/api/product.api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type {
@@ -172,12 +172,10 @@ export default function ProductDetail() {
         const response = await OrderAPI.getProductWithOrder({
           variables: { productId: productId! },
         })
-        console.log('🔍 Order check response:', response.data)
-        console.log('🔍 Order exists:', !!response.data?.order)
-        console.log('🔍 Payment status:', response.data?.order?.paymentStatus)
+
         return response.data
       } catch (error) {
-        console.log('❌ Order check failed:', error)
+        handleApiError(error)
         return null
       }
     },
@@ -534,7 +532,6 @@ export default function ProductDetail() {
 
   const isExistedInWatchList = checkExistedItemQuery?.data?.isFavorite
 
-  console.log('Product Detail:', product)
   if (productDetailQuery.isPending)
     return (
       <>

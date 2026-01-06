@@ -77,4 +77,16 @@ export const QUERY_KEYS = {
     validate: (productId: string) => ['bids', 'validate', productId] as const,
     place: ['bids', 'place'] as const,
   },
+
+  chat: {
+    detail: (orderId: string) => ['chat', orderId] as const,
+    messages: (orderId: string) => ['chat', orderId, 'messages'] as const,
+  },
+
+  admin: {
+    stats: ['admin', 'dashboard', 'stats'] as const,
+    userGrowth: ['admin', 'dashboard', 'user-growth'] as const,
+    auctionsStats: ['admin', 'dashboard', 'auctions-stats'] as const,
+    systemSettings: ['admin', 'system-settings'] as const,
+  },
 } as const

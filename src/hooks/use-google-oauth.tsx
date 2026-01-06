@@ -2,11 +2,14 @@
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import { redirectMap } from '@/components/auth/GuestRoute'
 import { QUERY_KEYS } from '@/constants/queryKey'
 import { AuthAPI } from '@/services/api/auth.api'
 import { useAuthStore } from '@/store/authStore'
 // hooks/use-google-auth.ts
 import { useMutation } from '@tanstack/react-query'
+
+import type { UserRole } from '@/types/auth.types'
 
 export const useGoogleAuth = () => {
   const navigate = useNavigate()
@@ -37,7 +40,7 @@ export const useGoogleAuth = () => {
           description: 'Welcome to AuctionHub',
         })
 
-        navigate('/')
+        navigate(redirectMap[data.user.role as UserRole])
       } else {
         console.error('Invalid Google auth response structure:', data)
         toast.error('Login failed', {

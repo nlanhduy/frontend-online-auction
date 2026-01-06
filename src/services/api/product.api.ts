@@ -29,7 +29,6 @@ export const ProductAPI = {
   },
 
   addToWatchList({ options, variables }: APIParams): ApiResponse {
-    console.log(getHeaders())
     return request({
       method: 'post',
       headers: getHeaders(),

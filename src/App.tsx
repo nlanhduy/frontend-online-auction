@@ -1,17 +1,14 @@
-import { Search } from 'lucide-react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { GuestRoute } from '@/components/auth/GuestRoute'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 
 import { Layout } from './components/layout/Layout'
-import OrderFulfillmentPage from './pages/order/OrderFulfillmentPage'
-import PaymentCancelPage from './pages/order/PaymentCancelPage'
-import PaymentSuccessPage from './pages/order/PaymentSuccessPage'
-import ProductDetail from './pages/product/ProductDetailPage'
 import { AdminCategories } from './pages/admin/categories'
+import { AdminDashboard } from './pages/admin/dashboard'
 import AdminProducts from './pages/admin/products'
 import AdminRequestToSeller from './pages/admin/request-to-seller'
+import { AdminSystemSetting } from './pages/admin/systemSetting'
 import { AdminUsers } from './pages/admin/users'
 import { AdminCreateUser } from './pages/admin/users/create'
 import { AdminUserDetail } from './pages/admin/users/detail'
@@ -25,16 +22,21 @@ import RatingWonAuction from './pages/bidder/rating'
 import WonAuctions from './pages/bidder/won-auctions'
 import Category from './pages/category'
 import Homepage from './pages/homepage'
+import OrderFulfillmentPage from './pages/order/OrderFulfillmentPage'
+import PaymentCancelPage from './pages/order/PaymentCancelPage'
+import PaymentSuccessPage from './pages/order/PaymentSuccessPage'
+import ProductDetail from './pages/product/detail'
 import Rating from './pages/rating'
+import Search from './pages/search'
 import SellerCompletedAuctions from './pages/seller/auction/completed'
 import SellerAuctionRating from './pages/seller/auction/rating'
+import { SellerOrderConfirmationPage } from './pages/seller/order/SellerOrderConfirmationPage'
 import SellerProducts from './pages/seller/product'
 import SellerCreateProduct from './pages/seller/product/create'
 import SellerProductEdit from './pages/seller/product/edit'
 import { Setting } from './pages/setting'
 import WatchList from './pages/watchList'
 import { UserRole } from './types/auth.types'
-import { SellerOrderConfirmationPage } from './pages/seller/order/SellerOrderConfirmationPage'
 
 function App() {
   return (
@@ -65,14 +67,7 @@ function App() {
         }
       />
 
-      <Route
-        path='/auth/callback'
-        element={
-          <GuestRoute>
-            <AuthCallback />
-          </GuestRoute>
-        }
-      />
+      <Route path='/auth/callback' element={<AuthCallback />} />
 
       {/* Public Routes with appropriate layout */}
       <Route element={<Layout />}>
@@ -219,7 +214,7 @@ function App() {
           path='admin'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Admin]}>
-              {/* <AdminDashboard /> */}
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />
@@ -259,10 +254,10 @@ function App() {
           }
         />
         <Route
-          path='admin/settings'
+          path='admin/system-settings'
           element={
             <ProtectedRoute allowedRoles={[UserRole.Admin]}>
-              {/* <AdminSettings /> */}
+              <AdminSystemSetting />
             </ProtectedRoute>
           }
         />

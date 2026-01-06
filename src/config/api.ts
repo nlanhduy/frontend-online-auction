@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios'
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useAuthStore } from '@/store/authStore'
 
 import type { AxiosRequestConfig, AxiosResponse } from 'axios'
@@ -13,6 +13,7 @@ export interface APIParams {
 }
 
 export const axiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_BACKEND_URL,
   timeout: 30000,
   withCredentials: true,
   headers: {
@@ -23,9 +24,11 @@ export const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   config => {
     const token = useAuthStore.getState().accessToken
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
+
     return config
   },
   error => Promise.reject(error),
@@ -38,9 +41,9 @@ let failedQueue: {
 }[] = []
 
 const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach(prom => {
-    if (error) prom.reject(error)
-    else prom.resolve(token as string)
+  failedQueue.forEach(promise => {
+    if (error) promise.reject(error)
+    else promise.resolve(token as string)
   })
   failedQueue = []
 }
@@ -53,10 +56,16 @@ axiosInstance.interceptors.response.use(
     }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
+      if (originalRequest.url?.includes('/auth/refresh')) {
+        useAuthStore.getState().clearAuth()
+        window.location.href = '/login'
+        return Promise.reject(error)
+      }
+
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({
-            resolve: (token: string) => {
+            resolve: token => {
               originalRequest.headers = {
                 ...originalRequest.headers,
                 Authorization: `Bearer ${token}`,
@@ -73,15 +82,19 @@ axiosInstance.interceptors.response.use(
 
       try {
         const res = await axios.post(
-          `${import.meta.env.VITE_IAM_SERVICE}/auth/refresh`,
+          `${import.meta.env.VITE_BACKEND_URL}/auth/refresh`,
           {},
-          { withCredentials: true },
+          {
+            withCredentials: true,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
         )
 
         const { accessToken, user } = res.data
 
         useAuthStore.getState().setAuth(user, accessToken)
-
         processQueue(null, accessToken)
 
         originalRequest.headers = {
@@ -93,7 +106,9 @@ axiosInstance.interceptors.response.use(
       } catch (err) {
         processQueue(err, null)
         useAuthStore.getState().clearAuth()
-        window.location.href = '/login'
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login'
+        }
         return Promise.reject(err)
       } finally {
         isRefreshing = false

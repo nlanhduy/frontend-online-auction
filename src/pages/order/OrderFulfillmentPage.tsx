@@ -13,8 +13,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
-import { OrderStatusProgress } from '@/components/ui/order-status-progress'
-import { RatingForm } from '@/components/ui/rating-form'
+import { StickyChatWidget } from '@/components/chat/sticky-chat-widget'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -26,13 +25,15 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { OrderStatusProgress } from '@/components/ui/order-status-progress'
+import { RatingForm } from '@/components/ui/rating-form'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { QUERY_KEYS } from '@/constants/queryKey'
 import { useAuth } from '@/hooks/use-auth'
 import { formatPrice, handleApiError } from '@/lib/utils'
-import { OrderAPI } from '@/services/api/order.api'
 import { LocationAPI } from '@/services/api/location.api'
+import { OrderAPI } from '@/services/api/order.api'
 import { OrderStatus } from '@/types/order.type'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -41,7 +42,6 @@ import type {
   ShippingInfoRequest,
   ConfirmShipmentRequest,
 } from '@/types/order.type'
-
 export default function OrderFulfillmentPage() {
   const { orderId: orderIdOrProductId } = useParams<{ orderId: string }>()
   const navigate = useNavigate()
@@ -406,397 +406,404 @@ export default function OrderFulfillmentPage() {
   }
 
   return (
-    <div className='container mx-auto px-4 py-8'>
-      <div className='mb-6'>
-        <h1 className='text-3xl font-bold'>Complete Order</h1>
-        <p className='mt-2 text-gray-600'>
-          Product: <span className='font-semibold'>{productData?.name}</span>
-        </p>
-      </div>
+    <>
+      <StickyChatWidget orderId={order.id} />
+      <div className='container mx-auto px-4 py-8'>
+        <div className='mb-6'>
+          <h1 className='text-3xl font-bold'>Complete Order</h1>
+          <p className='mt-2 text-gray-600'>
+            Product: <span className='font-semibold'>{productData?.name}</span>
+          </p>
+        </div>
 
-      {/* Progress Bar */}
-      <OrderStatusProgress currentStatus={order.status} />
+        {/* Progress Bar */}
+        <OrderStatusProgress currentStatus={order.status} />
 
-      {/* Main Content */}
-      <div className='mt-8 grid gap-6 lg:grid-cols-3'>
-        {/* Left Column - Order Info */}
-        <div className='space-y-6 lg:col-span-2'>
-          {/* Payment Section */}
-          {order.status === OrderStatus.PAYMENT_PENDING && isBuyer && (
-            <Card>
-              <CardHeader>
-                <CardTitle className='flex items-center gap-2'>
-                  <CreditCard className='h-5 w-5' />
-                  Payment
-                </CardTitle>
-              </CardHeader>
-              <CardContent className='space-y-4'>
-                <div className='rounded-lg bg-blue-50 p-4'>
-                  <p className='text-lg font-semibold text-blue-900'>
-                    Amount: {formatPrice(order.paymentAmountVND)}
-                  </p>
-                  <p className='text-sm text-blue-700'>
-                    (≈ ${order.paymentAmount.toFixed(2)} USD via PayPal)
-                  </p>
-                </div>
-                <Button
-                  onClick={handlePayment}
-                  disabled={createPaymentMutation.isPending}
-                  className='w-full'>
-                  {createPaymentMutation.isPending
-                    ? 'Processing...'
-                    : '💳 Pay via PayPal'}
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Shipping Form */}
-          {order.status === OrderStatus.SHIPPING_INFO_PENDING && isBuyer && (
-            <Card>
-              <CardHeader>
-                <CardTitle className='flex items-center gap-2'>
-                  <MapPin className='h-5 w-5' />
-                  Shipping Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmitShipping} className='space-y-4'>
-                  <div>
-                    <Label htmlFor='address'>Shipping Address *</Label>
-                    <Input
-                      id='address'
-                      placeholder='House number, street...'
-                      value={shippingForm.address}
-                      onChange={e =>
-                        setShippingForm({ ...shippingForm, address: e.target.value })
-                      }
-                      required
-                    />
+        {/* Main Content */}
+        <div className='mt-8 grid gap-6 lg:grid-cols-3'>
+          {/* Left Column - Order Info */}
+          <div className='space-y-6 lg:col-span-2'>
+            {/* Payment Section */}
+            {order.status === OrderStatus.PAYMENT_PENDING && isBuyer && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className='flex items-center gap-2'>
+                    <CreditCard className='h-5 w-5' />
+                    Payment
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className='space-y-4'>
+                  <div className='rounded-lg bg-blue-50 p-4'>
+                    <p className='text-lg font-semibold text-blue-900'>
+                      Amount: {formatPrice(order.paymentAmountVND)}
+                    </p>
+                    <p className='text-sm text-blue-700'>
+                      (≈ ${order.paymentAmount.toFixed(2)} USD via PayPal)
+                    </p>
                   </div>
+                  <Button
+                    onClick={handlePayment}
+                    disabled={createPaymentMutation.isPending}
+                    className='w-full'>
+                    {createPaymentMutation.isPending
+                      ? 'Processing...'
+                      : '💳 Pay via PayPal'}
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
-                  <div className='grid gap-4 md:grid-cols-2'>
+            {/* Shipping Form */}
+            {order.status === OrderStatus.SHIPPING_INFO_PENDING && isBuyer && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className='flex items-center gap-2'>
+                    <MapPin className='h-5 w-5' />
+                    Shipping Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmitShipping} className='space-y-4'>
                     <div>
-                      <Label htmlFor='city'>Province/City *</Label>
-                      <select
-                        id='city'
-                        className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
-                        value={shippingForm.city}
+                      <Label htmlFor='address'>Shipping Address *</Label>
+                      <Input
+                        id='address'
+                        placeholder='House number, street...'
+                        value={shippingForm.address}
                         onChange={e =>
-                          setShippingForm({ ...shippingForm, city: e.target.value })
+                          setShippingForm({ ...shippingForm, address: e.target.value })
                         }
                         required
-                        disabled={provincesQuery.isLoading}>
+                      />
+                    </div>
+
+                    <div className='grid gap-4 md:grid-cols-2'>
+                      <div>
+                        <Label htmlFor='city'>Province/City *</Label>
+                        <select
+                          id='city'
+                          className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
+                          value={shippingForm.city}
+                          onChange={e =>
+                            setShippingForm({ ...shippingForm, city: e.target.value })
+                          }
+                          required
+                          disabled={provincesQuery.isLoading}>
+                          <option value=''>
+                            {provincesQuery.isLoading
+                              ? 'Loading...'
+                              : 'Select Province/City'}
+                          </option>
+                          {provincesQuery.data?.map(province => (
+                            <option key={province.code} value={province.name}>
+                              {province.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <Label htmlFor='district'>District *</Label>
+                        <Input
+                          id='district'
+                          placeholder='Enter District'
+                          value={shippingForm.district}
+                          onChange={e =>
+                            setShippingForm({ ...shippingForm, district: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor='phone'>Phone Number *</Label>
+                      <Input
+                        id='phone'
+                        type='tel'
+                        placeholder='0909123456'
+                        value={shippingForm.phone}
+                        onChange={e =>
+                          setShippingForm({ ...shippingForm, phone: e.target.value })
+                        }
+                        pattern='[0-9]{10}'
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor='note'>Note</Label>
+                      <Textarea
+                        id='note'
+                        placeholder='Note for seller (optional)'
+                        value={shippingForm.note}
+                        onChange={e =>
+                          setShippingForm({ ...shippingForm, note: e.target.value })
+                        }
+                        rows={3}
+                      />
+                    </div>
+
+                    <Button type='submit' disabled={submitShippingMutation.isPending}>
+                      {submitShippingMutation.isPending
+                        ? 'Submitting...'
+                        : 'Submit Shipping Address'}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Seller Confirmation Form */}
+            {order.status === OrderStatus.SELLER_CONFIRMATION_PENDING && isSeller && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className='flex items-center gap-2'>
+                    <Package className='h-5 w-5' />
+                    Confirm Shipment
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className='space-y-6'>
+                  {/* Payment Info */}
+                  <div className='rounded-lg bg-green-50 p-4'>
+                    <p className='flex items-center gap-2 font-semibold text-green-900'>
+                      <CheckCircle className='h-5 w-5' />
+                      Payment Received
+                    </p>
+                    <p className='mt-1 text-green-700'>
+                      Amount: ${order.sellerAmount.toFixed(2)} USD
+                    </p>
+                    <p className='text-sm text-green-600'>
+                      You will receive payment to PayPal after buyer confirms receipt
+                    </p>
+                  </div>
+
+                  {/* Shipping Address */}
+                  <div className='rounded-lg border p-4'>
+                    <h4 className='mb-2 font-semibold'>📍 Shipping Address:</h4>
+                    <p>{order.shippingAddress}</p>
+                    <p>
+                      {order.shippingDistrict}, {order.shippingCity}
+                    </p>
+                    <p className='mt-2'>📞 {order.shippingPhone}</p>
+                    {order.shippingNote && (
+                      <p className='mt-2 text-sm text-gray-600'>
+                        💬 Note: {order.shippingNote}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Shipment Form */}
+                  <form onSubmit={handleConfirmShipment} className='space-y-4'>
+                    <div>
+                      <Label htmlFor='carrier'>Shipping Carrier *</Label>
+                      <select
+                        id='carrier'
+                        className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
+                        value={shipmentForm.carrier}
+                        onChange={e =>
+                          setShipmentForm({ ...shipmentForm, carrier: e.target.value })
+                        }
+                        required
+                        disabled={carriersQuery.isLoading}>
                         <option value=''>
-                          {provincesQuery.isLoading
-                            ? 'Loading...'
-                            : 'Select Province/City'}
+                          {carriersQuery.isLoading ? 'Loading...' : 'Select Carrier'}
                         </option>
-                        {provincesQuery.data?.map(province => (
-                          <option key={province.code} value={province.name}>
-                            {province.name}
+                        {carriersQuery.data?.map(carrier => (
+                          <option key={carrier} value={carrier}>
+                            {carrier}
                           </option>
                         ))}
                       </select>
                     </div>
 
                     <div>
-                      <Label htmlFor='district'>District *</Label>
+                      <Label htmlFor='trackingNumber'>Tracking Number *</Label>
                       <Input
-                        id='district'
-                        placeholder='Enter District'
-                        value={shippingForm.district}
+                        id='trackingNumber'
+                        placeholder='VN123456789'
+                        value={shipmentForm.trackingNumber}
                         onChange={e =>
-                          setShippingForm({ ...shippingForm, district: e.target.value })
+                          setShipmentForm({
+                            ...shipmentForm,
+                            trackingNumber: e.target.value,
+                          })
                         }
                         required
                       />
                     </div>
-                  </div>
 
-                  <div>
-                    <Label htmlFor='phone'>Phone Number *</Label>
-                    <Input
-                      id='phone'
-                      type='tel'
-                      placeholder='0909123456'
-                      value={shippingForm.phone}
-                      onChange={e =>
-                        setShippingForm({ ...shippingForm, phone: e.target.value })
-                      }
-                      pattern='[0-9]{10}'
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor='note'>Note</Label>
-                    <Textarea
-                      id='note'
-                      placeholder='Note for seller (optional)'
-                      value={shippingForm.note}
-                      onChange={e =>
-                        setShippingForm({ ...shippingForm, note: e.target.value })
-                      }
-                      rows={3}
-                    />
-                  </div>
-
-                  <Button type='submit' disabled={submitShippingMutation.isPending}>
-                    {submitShippingMutation.isPending
-                      ? 'Submitting...'
-                      : 'Submit Shipping Address'}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Seller Confirmation Form */}
-          {order.status === OrderStatus.SELLER_CONFIRMATION_PENDING && isSeller && (
-            <Card>
-              <CardHeader>
-                <CardTitle className='flex items-center gap-2'>
-                  <Package className='h-5 w-5' />
-                  Confirm Shipment
-                </CardTitle>
-              </CardHeader>
-              <CardContent className='space-y-6'>
-                {/* Payment Info */}
-                <div className='rounded-lg bg-green-50 p-4'>
-                  <p className='flex items-center gap-2 font-semibold text-green-900'>
-                    <CheckCircle className='h-5 w-5' />
-                    Payment Received
-                  </p>
-                  <p className='mt-1 text-green-700'>
-                    Amount: ${order.sellerAmount.toFixed(2)} USD
-                  </p>
-                  <p className='text-sm text-green-600'>
-                    You will receive payment to PayPal after buyer confirms receipt
-                  </p>
-                </div>
-
-                {/* Shipping Address */}
-                <div className='rounded-lg border p-4'>
-                  <h4 className='mb-2 font-semibold'>📍 Shipping Address:</h4>
-                  <p>{order.shippingAddress}</p>
-                  <p>
-                    {order.shippingDistrict}, {order.shippingCity}
-                  </p>
-                  <p className='mt-2'>📞 {order.shippingPhone}</p>
-                  {order.shippingNote && (
-                    <p className='mt-2 text-sm text-gray-600'>
-                      💬 Note: {order.shippingNote}
-                    </p>
-                  )}
-                </div>
-
-                {/* Shipment Form */}
-                <form onSubmit={handleConfirmShipment} className='space-y-4'>
-                  <div>
-                    <Label htmlFor='carrier'>Shipping Carrier *</Label>
-                    <select
-                      id='carrier'
-                      className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
-                      value={shipmentForm.carrier}
-                      onChange={e =>
-                        setShipmentForm({ ...shipmentForm, carrier: e.target.value })
-                      }
-                      required
-                      disabled={carriersQuery.isLoading}>
-                      <option value=''>
-                        {carriersQuery.isLoading ? 'Loading...' : 'Select Carrier'}
-                      </option>
-                      {carriersQuery.data?.map(carrier => (
-                        <option key={carrier} value={carrier}>
-                          {carrier}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor='trackingNumber'>Tracking Number *</Label>
-                    <Input
-                      id='trackingNumber'
-                      placeholder='VN123456789'
-                      value={shipmentForm.trackingNumber}
-                      onChange={e =>
-                        setShipmentForm({
-                          ...shipmentForm,
-                          trackingNumber: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                  </div>
-
-                  <Button type='submit' disabled={confirmShipmentMutation.isPending}>
-                    {confirmShipmentMutation.isPending
-                      ? 'Processing...'
-                      : 'Confirm Shipment'}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Tracking Info */}
-          {(order.status === OrderStatus.IN_TRANSIT ||
-            order.status === OrderStatus.BUYER_CONFIRMATION_PENDING) &&
-            isBuyer && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className='flex items-center gap-2'>
-                    <Truck className='h-5 w-5' />
-                    Order In Transit
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className='space-y-4'>
-                  <div className='rounded-lg border p-4'>
-                    <p>
-                      Carrier: <strong>{order.shippingCarrier}</strong>
-                    </p>
-                    <p className='mt-1'>
-                      Tracking Number: <strong>{order.trackingNumber}</strong>
-                    </p>
-                    <p className='mt-1 text-sm text-gray-600'>
-                      Shipped: {new Date(order.shippedAt!).toLocaleDateString('en-US')}
-                    </p>
-                  </div>
-
-                  <div className='rounded-lg bg-yellow-50 p-4'>
-                    <p className='text-sm text-yellow-800'>
-                      ⚠️ Please inspect the item carefully before confirming receipt
-                    </p>
-                  </div>
-
-                  <Button
-                    onClick={handleConfirmReceived}
-                    disabled={confirmReceivedMutation.isPending}>
-                    {confirmReceivedMutation.isPending
-                      ? 'Processing...'
-                      : '✅ I have received the item'}
-                  </Button>
+                    <Button type='submit' disabled={confirmShipmentMutation.isPending}>
+                      {confirmShipmentMutation.isPending
+                        ? 'Processing...'
+                        : 'Confirm Shipment'}
+                    </Button>
+                  </form>
                 </CardContent>
               </Card>
             )}
 
-          {/* Rating Section */}
-          {order.status === OrderStatus.COMPLETED && (
-            <RatingForm
-              targetUser={isBuyer ? order.seller : order.buyer}
-              userType={isBuyer ? 'buyer' : 'seller'}
-              existingRating={
-                isBuyer
-                  ? productData?.ratings?.buyerRating
-                  : productData?.ratings?.sellerRating
-              }
-              onSubmit={handleRating}
-              isLoading={createRatingMutation.isPending || updateRatingMutation.isPending}
-            />
-          )}
-        </div>
+            {/* Tracking Info */}
+            {(order.status === OrderStatus.IN_TRANSIT ||
+              order.status === OrderStatus.BUYER_CONFIRMATION_PENDING) &&
+              isBuyer && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className='flex items-center gap-2'>
+                      <Truck className='h-5 w-5' />
+                      Order In Transit
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className='space-y-4'>
+                    <div className='rounded-lg border p-4'>
+                      <p>
+                        Carrier: <strong>{order.shippingCarrier}</strong>
+                      </p>
+                      <p className='mt-1'>
+                        Tracking Number: <strong>{order.trackingNumber}</strong>
+                      </p>
+                      <p className='mt-1 text-sm text-gray-600'>
+                        Shipped: {new Date(order.shippedAt!).toLocaleDateString('en-US')}
+                      </p>
+                    </div>
 
-        {/* Right Column - Summary */}
-        <div className='space-y-6'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Information</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-3 text-sm'>
-              <div className='flex justify-between'>
-                <span className='text-gray-600'>Order ID:</span>
-                <span className='font-mono text-xs'>{order.id.slice(0, 8)}...</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-gray-600'>Product Price:</span>
-                <span className='font-semibold'>
-                  {formatPrice(order.paymentAmountVND)}
-                </span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-gray-600'>Platform Fee (5%):</span>
-                <span>${order.platformFee.toFixed(2)}</span>
-              </div>
-              <div className='flex justify-between'>
-                <span className='text-gray-600'>Seller Receives:</span>
-                <span className='font-semibold text-green-600'>
-                  ${order.sellerAmount.toFixed(2)} USD
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+                    <div className='rounded-lg bg-yellow-50 p-4'>
+                      <p className='text-sm text-yellow-800'>
+                        ⚠️ Please inspect the item carefully before confirming receipt
+                      </p>
+                    </div>
 
-          {/* Buyer/Seller Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{isBuyer ? 'Seller' : 'Buyer'}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className='font-semibold'>
-                {isBuyer ? order.seller.fullName : order.buyer.fullName}
-              </p>
-              <p className='text-sm text-gray-600'>
-                {isBuyer ? order.seller.email : order.buyer.email}
-              </p>
-            </CardContent>
-          </Card>
+                    <Button
+                      onClick={handleConfirmReceived}
+                      disabled={confirmReceivedMutation.isPending}>
+                      {confirmReceivedMutation.isPending
+                        ? 'Processing...'
+                        : '✅ I have received the item'}
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
 
-          {/* Cancel Button for Seller */}
-          {isSeller &&
-            order.status !== OrderStatus.COMPLETED &&
-            order.status !== OrderStatus.CANCELLED && (
-              <Button
-                variant='destructive'
-                className='w-full'
-                onClick={() => setCancelModalOpen(true)}>
-                <X className='mr-2 h-4 w-4' />
-                Cancel Transaction
-              </Button>
-            )}
-        </div>
-      </div>
-
-      {/* Cancel Order Modal */}
-      <Dialog open={cancelModalOpen} onOpenChange={setCancelModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className='flex items-center gap-2'>
-              <ThumbsDown className='h-5 w-5 text-red-500' />
-              Confirm Cancellation
-            </DialogTitle>
-            <DialogDescription>
-              Are you sure you want to cancel this transaction? The buyer will receive a
-              -1 rating.
-            </DialogDescription>
-          </DialogHeader>
-          <div className='space-y-4'>
-            <div>
-              <Label htmlFor='cancelReason'>Cancellation Reason *</Label>
-              <Textarea
-                id='cancelReason'
-                placeholder='Please provide reason...'
-                value={cancelReason}
-                onChange={e => setCancelReason(e.target.value)}
-                rows={4}
-                required
+            {/* Rating Section */}
+            {order.status === OrderStatus.COMPLETED && (
+              <RatingForm
+                targetUser={isBuyer ? order.seller : order.buyer}
+                userType={isBuyer ? 'buyer' : 'seller'}
+                existingRating={
+                  isBuyer
+                    ? productData?.ratings?.buyerRating
+                    : productData?.ratings?.sellerRating
+                }
+                onSubmit={handleRating}
+                isLoading={
+                  createRatingMutation.isPending || updateRatingMutation.isPending
+                }
               />
-            </div>
-            <div className='flex gap-2'>
-              <Button
-                variant='destructive'
-                onClick={handleCancelOrder}
-                disabled={cancelOrderMutation.isPending}>
-                {cancelOrderMutation.isPending ? 'Cancelling...' : 'Confirm Cancellation'}
-              </Button>
-              <Button variant='outline' onClick={() => setCancelModalOpen(false)}>
-                Go Back
-              </Button>
-            </div>
+            )}
           </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+
+          {/* Right Column - Summary */}
+          <div className='space-y-6'>
+            <Card>
+              <CardHeader>
+                <CardTitle>Order Information</CardTitle>
+              </CardHeader>
+              <CardContent className='space-y-3 text-sm'>
+                <div className='flex justify-between'>
+                  <span className='text-gray-600'>Order ID:</span>
+                  <span className='font-mono text-xs'>{order.id.slice(0, 8)}...</span>
+                </div>
+                <div className='flex justify-between'>
+                  <span className='text-gray-600'>Product Price:</span>
+                  <span className='font-semibold'>
+                    {formatPrice(order.paymentAmountVND)}
+                  </span>
+                </div>
+                <div className='flex justify-between'>
+                  <span className='text-gray-600'>Platform Fee (5%):</span>
+                  <span>${order.platformFee.toFixed(2)}</span>
+                </div>
+                <div className='flex justify-between'>
+                  <span className='text-gray-600'>Seller Receives:</span>
+                  <span className='font-semibold text-green-600'>
+                    ${order.sellerAmount.toFixed(2)} USD
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Buyer/Seller Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{isBuyer ? 'Seller' : 'Buyer'}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className='font-semibold'>
+                  {isBuyer ? order.seller.fullName : order.buyer.fullName}
+                </p>
+                <p className='text-sm text-gray-600'>
+                  {isBuyer ? order.seller.email : order.buyer.email}
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Cancel Button for Seller */}
+            {isSeller &&
+              order.status !== OrderStatus.COMPLETED &&
+              order.status !== OrderStatus.CANCELLED && (
+                <Button
+                  variant='destructive'
+                  className='w-full'
+                  onClick={() => setCancelModalOpen(true)}>
+                  <X className='mr-2 h-4 w-4' />
+                  Cancel Transaction
+                </Button>
+              )}
+          </div>
+        </div>
+
+        {/* Cancel Order Modal */}
+        <Dialog open={cancelModalOpen} onOpenChange={setCancelModalOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className='flex items-center gap-2'>
+                <ThumbsDown className='h-5 w-5 text-red-500' />
+                Confirm Cancellation
+              </DialogTitle>
+              <DialogDescription>
+                Are you sure you want to cancel this transaction? The buyer will receive a
+                -1 rating.
+              </DialogDescription>
+            </DialogHeader>
+            <div className='space-y-4'>
+              <div>
+                <Label htmlFor='cancelReason'>Cancellation Reason *</Label>
+                <Textarea
+                  id='cancelReason'
+                  placeholder='Please provide reason...'
+                  value={cancelReason}
+                  onChange={e => setCancelReason(e.target.value)}
+                  rows={4}
+                  required
+                />
+              </div>
+              <div className='flex gap-2'>
+                <Button
+                  variant='destructive'
+                  onClick={handleCancelOrder}
+                  disabled={cancelOrderMutation.isPending}>
+                  {cancelOrderMutation.isPending
+                    ? 'Cancelling...'
+                    : 'Confirm Cancellation'}
+                </Button>
+                <Button variant='outline' onClick={() => setCancelModalOpen(false)}>
+                  Go Back
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </>
   )
 }

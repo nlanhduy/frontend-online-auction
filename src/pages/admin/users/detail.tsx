@@ -155,7 +155,7 @@ export const AdminUserDetail = () => {
                     <div className='flex-1'>
                       <p className='text-sm text-gray-600'>Date of Birth</p>
                       <p className='font-medium'>
-                        {formatReadableDate(user.dateOfBirth)}
+                        {formatReadableDate(user.dateOfBirth, false)}
                       </p>
                     </div>
                   </div>

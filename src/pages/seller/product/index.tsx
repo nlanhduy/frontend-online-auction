@@ -259,8 +259,8 @@ function SellerProducts() {
               title='You don’t have any products yet'
               description='You can create a new product by clicking the button below.'
               button1={{
-                label: 'Browse All Products',
-                href: '/search',
+                label: 'Create Product',
+                href: '/seller/products/new',
               }}
             />
           </div>

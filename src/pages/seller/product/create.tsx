@@ -1,5 +1,5 @@
 import { Loader2 } from 'lucide-react'
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -29,6 +29,7 @@ import { formatNumber, parseNumber } from '@/lib/utils'
 import { productSchema } from '@/lib/validation/product'
 import { CategoryAPI } from '@/services/api/category.api'
 import { ProductAPI } from '@/services/api/product.api'
+import { SystemSettingAPI } from '@/services/api/systemSettingAPI'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -63,12 +64,27 @@ export default function SellerCreateProduct() {
   const [isMainImageUploading, setIsMainImageUploading] = useState(false)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+
+  const systemSettingQuery = useQuery({
+    queryKey: QUERY_KEYS.admin.systemSettings,
+    queryFn: async () => {
+      const res = await SystemSettingAPI.getSystemSettings({ options: {} })
+      return res.data
+    },
+    staleTime: Infinity,
+  })
+
+  const systemSettings = systemSettingQuery.data
+  const minImages = systemSettings?.minImages ?? 3
+
+  const schema = useMemo(() => productSchema(minImages), [minImages])
+
   const {
     control,
     handleSubmit,
     formState: { errors },
   } = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       name: '',
       description: '',
@@ -80,6 +96,7 @@ export default function SellerCreateProduct() {
       endTime: '',
       categoryId: undefined,
       autoExtend: false,
+      allowNewBidders: true,
     },
   })
 
@@ -197,7 +214,7 @@ export default function SellerCreateProduct() {
                 control={control}
                 render={({ field }) => (
                   <FormFieldWrapper
-                    label='Initial Price ($)'
+                    label='Initial Price'
                     error={errors.initialPrice?.message}>
                     <Input
                       type='text'
@@ -217,9 +234,7 @@ export default function SellerCreateProduct() {
                 name='priceStep'
                 control={control}
                 render={({ field }) => (
-                  <FormFieldWrapper
-                    label='Price Step ($)'
-                    error={errors.priceStep?.message}>
+                  <FormFieldWrapper label='Price Step' error={errors.priceStep?.message}>
                     <Input
                       type='text'
                       inputMode='decimal'
@@ -239,7 +254,7 @@ export default function SellerCreateProduct() {
                 control={control}
                 render={({ field }) => (
                   <FormFieldWrapper
-                    label='Buy Now Price ($)'
+                    label='Buy Now Price'
                     error={errors.buyNowPrice?.message}>
                     <Input
                       type='text'
@@ -262,7 +277,7 @@ export default function SellerCreateProduct() {
           <CardHeader>
             <CardTitle>Product Images</CardTitle>
             <CardDescription>
-              Upload a main image and at least 3 additional images
+              Upload a main image and at least {minImages} additional images
             </CardDescription>
           </CardHeader>
           <CardContent className='space-y-6'>
@@ -319,16 +334,8 @@ export default function SellerCreateProduct() {
                   <FormFieldWrapper label='Start Time' error={errors.startTime?.message}>
                     <Input
                       type='datetime-local'
-                      {...field}
-                      onChange={e => {
-                        const date = new Date(e.target.value)
-                        field.onChange(date.toISOString())
-                      }}
-                      value={
-                        field.value
-                          ? new Date(field.value).toISOString().slice(0, 16)
-                          : ''
-                      }
+                      value={field.value ?? ''}
+                      onChange={e => field.onChange(e.target.value)}
                     />
                   </FormFieldWrapper>
                 )}
@@ -341,16 +348,8 @@ export default function SellerCreateProduct() {
                   <FormFieldWrapper label='End Time' error={errors.endTime?.message}>
                     <Input
                       type='datetime-local'
-                      {...field}
-                      onChange={e => {
-                        const date = new Date(e.target.value)
-                        field.onChange(date.toISOString())
-                      }}
-                      value={
-                        field.value
-                          ? new Date(field.value).toISOString().slice(0, 16)
-                          : ''
-                      }
+                      value={field.value ?? ''}
+                      onChange={e => field.onChange(e.target.value)}
                     />
                   </FormFieldWrapper>
                 )}
@@ -367,6 +366,23 @@ export default function SellerCreateProduct() {
                     <p className='text-sm text-muted-foreground'>
                       Automatically extend the auction if bids are placed near the end
                       time
+                    </p>
+                  </div>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </div>
+              )}
+            />
+
+            {/* Allow new bidders */}
+            <Controller
+              name='allowNewBidders'
+              control={control}
+              render={({ field }) => (
+                <div className='flex items-center justify-between pt-4 border-t'>
+                  <div>
+                    <label className='text-sm font-medium'>Allow New Bidders</label>
+                    <p className='text-sm text-muted-foreground'>
+                      Allow new bidders to join the auction
                     </p>
                   </div>
                   <Switch checked={field.value} onCheckedChange={field.onChange} />

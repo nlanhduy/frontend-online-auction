@@ -123,7 +123,11 @@ export function Layout() {
           <>
             {commonItems}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate('/admin/dashboard')}>
+            <DropdownMenuItem onClick={() => navigate('/admin/system-settings')}>
+              <Settings className='mr-2 h-4 w-4' />
+              System Settings
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate('/admin')}>
               <LayoutDashboard className='mr-2 h-4 w-4' />
               Dashboard
             </DropdownMenuItem>
@@ -170,7 +174,7 @@ export function Layout() {
 
             <CategoriesMenu />
 
-            <Link to='/products' className='text-sm font-medium hover:text-primary'>
+            <Link to='/search' className='text-sm font-medium hover:text-primary'>
               Products
             </Link>
           </nav>

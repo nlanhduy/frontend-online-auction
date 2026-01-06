@@ -89,17 +89,18 @@ export function Setting() {
   })
 
   const requestSellerStatusQuery = useQuery({
-    queryKey: QUERY_KEYS.requestToSellers.detail(userInformation?.id || ''),
+    queryKey: QUERY_KEYS.requestToSellers.detail(userInformation?.id),
     queryFn: async () => {
       const response = await AuthAPI.getRequestSellerStatus({})
       return response.data
     },
-    enabled: !!isAuthenticated,
+    enabled: !!isAuthenticated && !!userInformation?.id,
     staleTime: 1000 * 60 * 5,
   })
   const requestToSeller = requestSellerStatusQuery.data
-  console.log({ requestToSeller })
 
+  console.log('requestToSeller', requestToSeller)
+  console.log(user)
   const changeNameMutation = useMutation({
     mutationFn: async ({ fullName }: { fullName: string }) => {
       const response = await AuthAPI.changeName({
@@ -463,46 +464,50 @@ export function Setting() {
           </CardContent>
         </Card>
 
-        {!requestSellerStatusQuery.isPending ||
-          (user?.role === UserRole.Seller && (
-            <div className='w-full space-y-2'>
-              <Button
-                className='w-full'
-                onClick={onRequestToSeller}
-                disabled={disableRequestButton}>
-                {requestToSellerMutation.isPending && <Spinner />}
-                {buttonText}
-              </Button>
+        {requestSellerStatusQuery.isPending && (
+          <div className='w-full'>
+            <Spinner />
+          </div>
+        )}
 
-              {/* ===== REQUEST HISTORY ===== */}
-              {requestToSeller && requestToSeller.length > 0 && (
-                <div className='rounded-md border mt-2 border-muted bg-muted/50 p-3 space-y-2'>
-                  <p className='text-sm font-medium'>Request History</p>
+        {!requestSellerStatusQuery.isPending && user?.role !== UserRole.Seller && (
+          <div className='w-full space-y-2'>
+            <Button
+              className='w-full'
+              onClick={onRequestToSeller}
+              disabled={disableRequestButton}>
+              {requestToSellerMutation.isPending && <Spinner />}
+              {buttonText}
+            </Button>
 
-                  {requestToSeller.map((req: any) => (
-                    <div
-                      key={req.id}
-                      className='flex items-center justify-between text-sm mt-4'>
-                      <span className='text-muted-foreground'>
-                        {formatReadableDate(req.createdAt)}
-                      </span>
+            {requestToSeller?.length > 0 && (
+              <div className='rounded-md border mt-2 border-muted bg-muted/50 p-3 space-y-2'>
+                <p className='text-sm font-medium'>Request History</p>
 
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                          req.status === RequestToSellerStatus.Pending
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                            : req.status === RequestToSellerStatus.Approved
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                        }`}>
-                        {req.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+                {requestToSeller.map((req: any) => (
+                  <div
+                    key={req.id}
+                    className='flex items-center justify-between text-sm mt-4'>
+                    <span className='text-muted-foreground'>
+                      {formatReadableDate(req.createdAt)}
+                    </span>
+
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        req.status === RequestToSellerStatus.Pending
+                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                          : req.status === RequestToSellerStatus.Approved
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                      }`}>
+                      {req.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* OTP Verification Modal */}

@@ -27,6 +27,8 @@ function Homepage() {
       const response = await ProductAPI.getHomePageProducts({ options: {} })
       return response.data
     },
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   })
 
   if (isLoading) {
@@ -55,24 +57,26 @@ function Homepage() {
   ]
 
   return (
-    <div className='container mx-auto flex flex-col gap-16 py-12'>
-      {sections.map((section, index) => (
-        <div key={index}>
-          <h2 className='text-2xl font-bold mb-6 text-gray-900'>{section.title}</h2>
-          <Carousel className='w-full max-w-full px-12' opts={{ align: 'start' }}>
-            <CarouselContent className='-ml-4'>
-              {section.data.map(product => (
-                <CarouselItem key={product.id} className='pl-4 basis-1/3'>
-                  <ProductCard product={product} size='large' />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className='left-0' />
-            <CarouselNext className='right-0' />
-          </Carousel>
-        </div>
-      ))}
-    </div>
+    <>
+      <div className='container mx-auto flex flex-col gap-16 py-12'>
+        {sections.map((section, index) => (
+          <div key={index}>
+            <h2 className='text-2xl font-bold mb-6 text-gray-900'>{section.title}</h2>
+            <Carousel className='w-full max-w-full px-12' opts={{ align: 'start' }}>
+              <CarouselContent className='-ml-4'>
+                {section.data.map(product => (
+                  <CarouselItem key={product.id} className='pl-4 basis-1/3'>
+                    <ProductCard product={product} size='large' />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className='left-0' />
+              <CarouselNext className='right-0' />
+            </Carousel>
+          </div>
+        ))}
+      </div>
+    </>
   )
 }
 

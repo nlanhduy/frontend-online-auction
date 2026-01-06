@@ -7,17 +7,17 @@ interface GuestRouteProps {
   children?: React.ReactNode
 }
 
+export const redirectMap: Record<UserRole, string> = {
+  [UserRole.Guest]: '/',
+  [UserRole.Bidder]: '/',
+  [UserRole.Seller]: '/seller/products',
+  [UserRole.Admin]: '/admin',
+}
+
 export function GuestRoute({ children }: GuestRouteProps) {
   const { isAuthenticated, user } = useAuth()
 
   if (isAuthenticated && user) {
-    const redirectMap: Record<UserRole, string> = {
-      [UserRole.Guest]: '/',
-      [UserRole.Bidder]: '/',
-      [UserRole.Seller]: '/seller/products',
-      [UserRole.Admin]: '/admin',
-    }
-
     return <Navigate to={redirectMap[user.role]} replace />
   }
 

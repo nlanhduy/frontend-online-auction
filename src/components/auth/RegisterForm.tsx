@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { CalendarIcon, Loader2 } from 'lucide-react'
+import { CalendarIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import ReCAPTCHA from 'react-google-recaptcha'
 import { Controller, useForm } from 'react-hook-form'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -26,7 +26,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Textarea } from '@/components/ui/textarea'
-import { formatDate, formatToYYYYMMDD, handleApiError, isValidDate } from '@/lib/utils'
+import { formatDate, formatToYYYYMMDD, handleApiError } from '@/lib/utils'
 import { registerRequestSchema } from '@/lib/validation/auth'
 import { AuthAPI } from '@/services/api/auth.api'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -41,7 +41,6 @@ const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY
 
 export function RegisterForm() {
   const [showOTPModal, setShowOTPModal] = useState(false)
-  const [datePickerOpen, setDatePickerOpen] = useState(false)
   const navigate = useNavigate()
 
   const form = useForm<RegisterRequestFormData>({
