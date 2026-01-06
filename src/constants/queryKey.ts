@@ -70,4 +70,11 @@ export const QUERY_KEYS = {
     create: ['ratings', 'create'] as const,
     update: (ratingId: string) => ['ratings', 'update', ratingId] as const,
   },
+
+  bids: {
+    history: (productId: string) => ['bids', 'history', productId] as const,
+    status: (productId: string) => ['bids', 'status', productId] as const,
+    validate: (productId: string) => ['bids', 'validate', productId] as const,
+    place: ['bids', 'place'] as const,
+  },
 } as const
