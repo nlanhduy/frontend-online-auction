@@ -92,12 +92,10 @@ export default function OrderFulfillmentPage() {
   } = useQuery<ProductWithOrder>({
     queryKey: ['order', orderIdOrProductId],
     queryFn: async () => {
-      console.log('Fetching order with ID:', orderIdOrProductId)
 
       const response = await OrderAPI.getOrderById({
         variables: { orderId: orderIdOrProductId },
       })
-      console.log('✅ Order by ID response:', response.data)
 
       // Map response: GET /orders/:orderId returns flat structure with Prisma relations
       const orderData = response.data

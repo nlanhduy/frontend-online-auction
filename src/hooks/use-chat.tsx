@@ -114,14 +114,12 @@ export const useChat = (orderId: string, options: UseOrderChatOptions = {}) => {
     socket.on('jwt_error', handleJwtError)
 
     socket.on('connect', () => {
-      console.log('✅ Socket connected:', socket.id)
       setIsConnected(true)
       setError(null)
       socket.emit('join_order_chat', { orderId })
     })
 
     socket.on('disconnect', reason => {
-      console.log('❌ Socket disconnected:', reason)
       setIsConnected(false)
       if (reason === 'io server disconnect') {
         socket.connect()
@@ -135,7 +133,6 @@ export const useChat = (orderId: string, options: UseOrderChatOptions = {}) => {
     })
 
     socket.on('joined_chat', (data: any) => {
-      console.log('Joined chat room:', data.roomName)
       setUnreadCount(data.unreadCount || 0)
       ChatAPI.getMessages({
         variables: { orderId },
@@ -202,7 +199,6 @@ export const useChat = (orderId: string, options: UseOrderChatOptions = {}) => {
 
     // Cleanup
     return () => {
-      console.log('🧹 Cleaning up socket connection')
       if (socketRef.current) {
         socketRef.current.emit('leave_order_chat', { orderId })
         socketRef.current.off('jwt_error', handleJwtError)

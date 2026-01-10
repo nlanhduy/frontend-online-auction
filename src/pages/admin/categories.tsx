@@ -129,7 +129,6 @@ export function AdminCategories() {
   const selectedCategory = categories.find(
     (cat: Category) => cat.id === selectedCategoryId,
   )
-  console.log({ selectedCategoryId })
 
   if (isFetchingCategories && selectedCategory === undefined) {
     return (

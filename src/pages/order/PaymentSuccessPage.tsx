@@ -51,12 +51,9 @@ export default function PaymentSuccessPage() {
 
   const capturePayment = async (orderId: string, productId: string) => {
     try {
-      console.log('Capturing payment...', { orderId, productId })
       const response = await OrderAPI.capturePaymentOrder({
         variables: { orderId, productId },
       })
-
-      console.log('Capture response:', response.data)
 
       if (response.data.success && response.data.order) {
         const createdOrderId = response.data.order.id

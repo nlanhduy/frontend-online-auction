@@ -48,7 +48,6 @@ export function SellerOrderConfirmationPage() {
       const response = await OrderAPI.getProductWithOrder({
         variables: { productId: productId! },
       })
-      console.log('🔍 SellerOrderConfirmationPage - Order API Response:', response.data)
       return response.data
     },
     enabled: !!productId,
@@ -61,7 +60,6 @@ export function SellerOrderConfirmationPage() {
       const response = await ProductAPI.getProductDetail({
         variables: { productId: productId! },
       })
-      console.log('🔍 SellerOrderConfirmationPage - Product API Response:', response.data)
       return response.data
     },
     enabled: !!productId,
@@ -69,10 +67,6 @@ export function SellerOrderConfirmationPage() {
 
   const order = orderData?.order
   const product = productData || orderData?.product
-
-  console.log('📦 Order data:', order)
-  console.log('📦 Product data:', product)
-  console.log('📦 Has order:', !!order)
 
   const isLoading = isLoadingOrder || isLoadingProduct
 

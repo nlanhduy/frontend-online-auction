@@ -51,10 +51,9 @@ export function TopSellersGroupedBarChart({ data }: Props) {
     data?.slice(0, 5).map(seller => ({
       name: seller.fullName.split(' ')[0],
       sales: seller.totalSales,
-      revenue: Math.round(seller.revenue / 100), // scale cho dễ nhìn
+      revenue: Math.round(seller.revenue / 100),
       products: seller.productCount,
     })) ?? []
-  console.log('TopSellersGroupedBarChart data:', chartData)
 
   return (
     <Card>

@@ -29,5 +29,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "src/pages/bidder/.tsx"]
+  "include": ["src", "src/pages/bidder/rating.tsx"]
 }
