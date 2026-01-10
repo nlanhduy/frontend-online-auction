@@ -99,8 +99,6 @@ export function Setting() {
   })
   const requestToSeller = requestSellerStatusQuery.data
 
-  console.log('requestToSeller', requestToSeller)
-  console.log(user)
   const changeNameMutation = useMutation({
     mutationFn: async ({ fullName }: { fullName: string }) => {
       const response = await AuthAPI.changeName({
