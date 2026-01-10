@@ -257,4 +257,12 @@ export const AuthAPI = {
       ...options,
     })
   },
+  resetPassword({ options, variables }: APIParams): ApiResponse {
+    return request({
+      method: 'patch',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/${variables.userId}/reset-password`,
+      ...options,
+    })
+  },
 }

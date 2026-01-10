@@ -94,8 +94,8 @@ export const AdminEditUser = () => {
       })
       return res.data
     },
-    onSuccess: () => {
-      toast.success('User updated successfully!')
+    onSuccess: data => {
+      toast.success(data.message || 'User updated successfully!')
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.user.all],
         exact: false,
@@ -123,6 +123,26 @@ export const AdminEditUser = () => {
       })
     }
   }, [user])
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: async () => {
+      const res = await AuthAPI.resetPassword({ variables: { userId: id } })
+      return res.data
+    },
+    onSuccess: data => {
+      toast.success(data.message || 'Password reset successfully!')
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.user.all],
+        exact: false,
+      })
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.user.detail(id!)],
+      })
+    },
+    onError: err => {
+      handleApiError(err, 'Failed to reset password')
+    },
+  })
 
   function onSubmit(data: EditUserFormData) {
     updateUserMutation.mutate(data)
@@ -161,6 +181,9 @@ export const AdminEditUser = () => {
     )
   }
 
+  const handleResetPassword = () => {
+    resetPasswordMutation.mutate()
+  }
   return (
     <div className='py-12'>
       <div className='container mx-auto max-w-3xl'>
@@ -442,6 +465,26 @@ export const AdminEditUser = () => {
                 </Button>
               </div>
             </form>
+            {/* Reset password button */}
+
+            <Button
+              type='button'
+              className='mt-10 w-full'
+              onClick={handleResetPassword}
+              disabled={resetPasswordMutation.isPending}>
+              {resetPasswordMutation.isPending ? (
+                <>
+                  <Spinner />
+                  Resetting Password...
+                </>
+              ) : (
+                'Reset Password'
+              )}
+            </Button>
+            <p className='text-sm text-muted-foreground m-2'>
+              A new temporary password will be automatically generated and sent to the
+              user’s email address.
+            </p>
           </CardContent>
         </Card>
       </div>
