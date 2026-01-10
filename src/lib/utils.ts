@@ -34,6 +34,36 @@ export const getTimeRemaining = (endTime: string) => {
   return `${hours} hours ${minutes} minutes`
 }
 
+export const getTimeUntilStart = (startTime: string) => {
+  const now = new Date()
+  const start = new Date(startTime)
+  const diff = start.getTime() - now.getTime()
+
+  if (diff < 0) return null // Already started
+
+  const hours = Math.floor(diff / (1000 * 60 * 60))
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${seconds}s`
+  }
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`
+  }
+  return `${seconds}s`
+}
+
+export const getAuctionStatus = (startTime: string, endTime: string): 'NOT_STARTED' | 'ACTIVE' | 'ENDED' => {
+  const now = new Date()
+  const start = new Date(startTime)
+  const end = new Date(endTime)
+
+  if (now < start) return 'NOT_STARTED'
+  if (now > end) return 'ENDED'
+  return 'ACTIVE'
+}
+
 export const isProductNew = (createdAt: string): boolean => {
   const thresholdMinutes = Number.parseInt(
     import.meta.env.VITE_NEW_PRODUCT_THRESHOLD_MINUTES || '60',

@@ -20,4 +20,19 @@ export const BidAPI = {
       ...options,
     })
   },
+  validateBid({ options, variables }: APIParams): ApiResponse {
+    return request({
+      method: 'get',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/bids/validate/${variables.productId}`,
+      ...options,
+    })
+  },
+  getUserBidStatus({ variables }: APIParams): ApiResponse {
+    return request({
+      method: 'get',
+      headers: getHeaders(),
+      url: `${import.meta.env.VITE_BACKEND_URL}/bids/status/${variables.productId}`,
+    })
+  },
 }
