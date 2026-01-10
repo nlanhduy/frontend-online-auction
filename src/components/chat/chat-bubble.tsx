@@ -4,7 +4,7 @@ import { Check, CheckCheck } from 'lucide-react'
 import React from 'react'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { cn } from '@/lib/utils'
+import { cn, getInitials } from '@/lib/utils'
 
 import type { Message } from '@/hooks/use-chat'
 
@@ -23,15 +23,6 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   showTimestamp = true,
   className,
 }) => {
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2)
-  }
-
   return (
     <div
       className={cn(

@@ -1,4 +1,4 @@
-import { BrushCleaning, Bot, Hand } from 'lucide-react'
+import { Bot, BrushCleaning, Hand } from 'lucide-react'
 
 import {
   Table,
@@ -23,9 +23,11 @@ import type { BidHistoryItem } from '@/types/bid.type'
 export function BidHistoryTable({
   bidHistory,
   currentUserId,
+  canSeeBidderRating = false,
 }: {
   bidHistory?: BidHistoryItem[]
   currentUserId?: string
+  canSeeBidderRating?: boolean
 }) {
   if (!bidHistory?.length)
     return (
@@ -53,6 +55,7 @@ export function BidHistoryTable({
             <TableHead>Max amount</TableHead>
             <TableHead>Time</TableHead>
             <TableHead className='text-right'>Status</TableHead>
+            {canSeeBidderRating && <TableHead className='text-right'>Rating</TableHead>}
           </TableRow>
         </TableHeader>
 
@@ -103,6 +106,16 @@ export function BidHistoryTable({
                     <span className='text-green-600 text-sm'>Accepted</span>
                   )}
                 </TableCell>
+                {canSeeBidderRating && (
+                  // Link to bidder rating page
+                  <TableCell className='text-right'>
+                    <a
+                      href={`/ratings/${bid.user.id}`}
+                      className='text-blue-500 hover:underline'>
+                      View
+                    </a>
+                  </TableCell>
+                )}
               </TableRow>
             )
           })}

@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { twMerge } from 'tailwind-merge'
 
 import { UserRole } from '@/types/auth.types'
+import { BidStatus } from '@/types/bid.type'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -54,14 +55,14 @@ export const getTimeUntilStart = (startTime: string) => {
   return `${seconds}s`
 }
 
-export const getAuctionStatus = (startTime: string, endTime: string): 'NOT_STARTED' | 'ACTIVE' | 'ENDED' => {
+export const getAuctionStatus = (startTime: string, endTime: string): BidStatus => {
   const now = new Date()
   const start = new Date(startTime)
   const end = new Date(endTime)
 
-  if (now < start) return 'NOT_STARTED'
-  if (now > end) return 'ENDED'
-  return 'ACTIVE'
+  if (now < start) return BidStatus.NOT_STARTED
+  if (now > end) return BidStatus.ENDED
+  return BidStatus.ACTIVE
 }
 
 export const isProductNew = (createdAt: string): boolean => {
@@ -210,4 +211,14 @@ export const formatToYYYYMMDD = (date: Date) => {
   const m = String(date.getMonth() + 1).padStart(2, '0')
   const d = String(date.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
+}
+
+export const getInitials = (name?: string) => {
+  if (!name) return 'U'
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
 }

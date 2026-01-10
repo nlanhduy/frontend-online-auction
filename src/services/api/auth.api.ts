@@ -208,11 +208,11 @@ export const AuthAPI = {
       ...options,
     })
   },
-  getMyRating({ options }: APIParams): ApiResponse {
+  getUserRatings({ options, variables }: APIParams): ApiResponse {
     return request({
       method: 'get',
       headers: getHeaders(),
-      url: `${import.meta.env.VITE_BACKEND_URL}/users/me/ratings/details  `,
+      url: `${import.meta.env.VITE_BACKEND_URL}/users/${variables.userId}/ratings`,
       ...options,
     })
   },

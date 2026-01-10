@@ -7,6 +7,7 @@ import {
   Package,
   Search,
   Settings,
+  Star,
   TableProperties,
   User,
 } from 'lucide-react'
@@ -66,9 +67,9 @@ export function Layout() {
 
     const commonItems = (
       <>
-        <DropdownMenuItem onClick={() => navigate('/profile')}>
-          <User className='mr-2 h-4 w-4' />
-          Profile
+        <DropdownMenuItem onClick={() => navigate(`/ratings/${user.id}`)}>
+          <Star className='mr-2 h-4 w-4' />
+          Rating
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => navigate('/settings')}>
           <Settings className='mr-2 h-4 w-4' />

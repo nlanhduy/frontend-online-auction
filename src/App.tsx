@@ -106,7 +106,7 @@ function App() {
 
         {/* Bidder Routes */}
         <Route
-          path='profile'
+          path='/ratings/:userId'
           element={
             <ProtectedRoute
               allowedRoles={[UserRole.Bidder, UserRole.Seller, UserRole.Admin]}>

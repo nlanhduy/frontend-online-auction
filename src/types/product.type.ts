@@ -57,7 +57,13 @@ export interface SearchProductsParams {
   page?: number
 }
 
-export type ProductStatus = 'ACTIVE' | 'COMPLETED' | 'CANCELLED'
+export const ProductStatus = {
+  ACTIVE: 'ACTIVE',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+} as const
+
+export type ProductStatus = (typeof ProductStatus)[keyof typeof ProductStatus]
 
 export type ProductPermission = {
   canRate: boolean

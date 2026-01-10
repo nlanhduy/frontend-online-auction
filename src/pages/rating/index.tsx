@@ -1,4 +1,5 @@
 import { Award, ThumbsDown, ThumbsUp, TrendingUp } from 'lucide-react'
+import { useParams } from 'react-router-dom'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -6,23 +7,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
-import { useAuth } from '@/hooks/use-auth'
-import { formatReadableDate } from '@/lib/utils'
+import { formatReadableDate, getInitials } from '@/lib/utils'
 import { AuthAPI } from '@/services/api/auth.api'
 import { useQuery } from '@tanstack/react-query'
 
 import type { RatingData } from '@/types/rating.type'
-
 function Rating() {
-  const { user, isAuthenticated } = useAuth()
-
+  const { userId } = useParams()
   const ratingQuery = useQuery<RatingData>({
-    queryKey: [QUERY_KEYS.user.myRating(user?.id)],
+    queryKey: [QUERY_KEYS.user.myRating(userId)],
     queryFn: async () => {
-      const response = await AuthAPI.getMyRating({})
+      const response = await AuthAPI.getUserRatings({
+        variables: { userId },
+      })
       return response.data
     },
-    enabled: !!isAuthenticated,
+    enabled: !!userId,
     staleTime: 1000 * 60 * 5,
   })
 
@@ -47,16 +47,32 @@ function Rating() {
     )
   }
 
-  const { positiveRating, negativeRating, totalRatings, positivePercentage, ratings } =
-    ratingQuery.data
+  const {
+    positiveRating,
+    negativeRating,
+    totalRatings,
+    positivePercentage,
+    ratings,
+    user,
+  } = ratingQuery.data
 
   return (
     <div className='max-w-7xl mx-auto p-6 space-y-6'>
       {/* Header */}
-      <div className='bg-white rounded-lg shadow-md p-6'>
-        <h1 className='text-3xl font-bold text-gray-900 mb-2'>My Reputation</h1>
-        <p className='text-gray-600'>View all ratings and feedback from other users</p>
-      </div>
+      <Card className='p-6 flex gap-4'>
+        <Avatar className='h-12 w-12'>
+          <AvatarImage src={user.profilePicture || user.avatar} alt={user.fullName} />
+          <AvatarFallback>{getInitials(user.fullName)}</AvatarFallback>
+        </Avatar>
+
+        <div>
+          <h1 className='text-3xl font-bold text-gray-900'>Ratings</h1>
+          <p className='text-gray-600'>
+            View all ratings and feedback from{' '}
+            <span className='font-medium'>{user.fullName}</span>
+          </p>
+        </div>
+      </Card>
 
       {/* Stats Overview */}
       <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>

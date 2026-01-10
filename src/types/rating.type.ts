@@ -19,4 +19,10 @@ export interface RatingData {
   totalRatings: number
   positivePercentage: number
   ratings: Rating[]
+  user: {
+    id: string
+    fullName: string
+    avatar: string
+    profilePicture?: string
+  }
 }

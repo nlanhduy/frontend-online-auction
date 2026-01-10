@@ -72,7 +72,7 @@ export const QUERY_KEYS = {
   },
 
   bids: {
-    history: (productId: string) => ['bids', 'history', productId] as const,
+    history: (productId?: string) => ['bids', 'history', productId] as const,
     status: (productId: string) => ['bids', 'status', productId] as const,
     validate: (productId: string) => ['bids', 'validate', productId] as const,
     place: ['bids', 'place'] as const,

@@ -1,27 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Clock, Gavel, Heart, Package, ShoppingCart, User, Info } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { Clock, Gavel, Heart, Info, Package, ShoppingCart, User } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 
+import { BidHistoryTable } from '@/components/ui/bid-history'
+import { BidStatusBadge } from '@/components/ui/bid-status-badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { BidStatusBadge } from '@/components/ui/bid-status-badge'
-import { BidHistoryTable } from '@/components/ui/bid-history'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import {
+  CreateQuestionNode,
+  ProductQuestionTree,
+} from '@/components/ui/product-question-tree'
+import { Spinner } from '@/components/ui/spinner'
+import { Switch } from '@/components/ui/switch'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import {
-  CreateQuestionNode,
-  ProductQuestionTree,
-} from '@/components/ui/product-question-tree'
-import { Spinner } from '@/components/ui/spinner'
 import { QUERY_KEYS } from '@/constants/queryKey'
 import { useAuth } from '@/hooks/use-auth'
 import { useAddToWatchList, useRemoveFromWatchList } from '@/hooks/use-watchlist'
@@ -29,10 +29,10 @@ import { renderRichText } from '@/lib/renderRichText'
 import {
   formatPrice,
   formatReadableDate,
+  getAuctionStatus,
   getProductStatusColor,
   getTimeRemaining,
   getTimeUntilStart,
-  getAuctionStatus,
   handleApiError,
 } from '@/lib/utils'
 import { BidAPI } from '@/services/api/bid.api'
@@ -973,7 +973,7 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          <div className='bg-white rounded-lg p-6'>
+          <Card className=' p-6'>
             <h3 className='font-semibold text-lg mb-4 flex items-center gap-2'>
               <Package className='w-5 h-5' />
               Seller information
@@ -990,7 +990,7 @@ export default function ProductDetail() {
                 </p>
               </div>
             </div>
-          </div>
+          </Card>
         </div>
       </div>
 

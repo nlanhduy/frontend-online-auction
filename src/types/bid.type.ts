@@ -14,11 +14,15 @@ export type Bid = {
 export type Bids = Bid[]
 
 export type BidValidationResponse = {
-  isValid: boolean
   canBid: boolean
-  message: string
-  minimumBid?: number
   suggestedAmount?: number
+  currentPrice: number
+  stepPrice: number
+  userRatingScore: number
+  userTotalRatings: number
+  message: string
+  isSeller: boolean
+  isBidding: boolean
 }
 
 export type CreateBidRequest = {
@@ -54,3 +58,10 @@ export type UserBidStatus = {
   remainingBudget?: number
 }
 
+export const BidStatus = {
+  NOT_STARTED: 'NOT_STARTED',
+  ACTIVE: 'ACTIVE',
+  ENDED: 'ENDED',
+} as const
+
+export type BidStatus = (typeof BidStatus)[keyof typeof BidStatus]
